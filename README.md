@@ -51,3 +51,28 @@ class PayloadScheme {
   Optional<ErrorScheme> error;
 }
 ```
+
+
+### To json
+
+```dart
+final news = NewsItem(
+  id: 1,
+  title: 'Some new',
+  description: 'Description',
+  commentsCount: 12',
+);
+
+final json = news.toJson();
+final stringJson = news.toStringJson();
+```
+
+### From json
+
+```dart
+final json = _client.getJsonBody(response);
+final jsonString = _client.getStringJsonBody(response);
+
+final news = NewsItem.fromJson(json);
+final news = NewsItem.fromStringJson(jsonString);
+```
