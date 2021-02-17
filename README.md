@@ -62,7 +62,7 @@ final news = NewsItem(
   id: 1,
   title: 'Some new',
   description: 'Description',
-  commentsCount: 12',
+  commentsCount: 12,
 );
 
 final json = news.toJson();
