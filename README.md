@@ -42,7 +42,7 @@ class NewsItemScheme {
 ### Optional
 
 By default all fields are required, and if there will not be a field, then parser will throw the `SchemeConsistencyException`.
-To describe optional fields use [https://pub.dev/packages/optional](optional) library:
+To describe optional fields use [optional](https://pub.dev/packages/optional) library:
 
 ```dart
 @SerdesJson()
