@@ -4,7 +4,7 @@ import 'package:serdes_json/parser.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:recase/recase.dart';
 
-import 'annotations.dart';
+import 'serdes_json.dart';
 import 'models.dart';
 
 class JsonSerializableGenerator extends GeneratorForAnnotation<SerdesJson> {

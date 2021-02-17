@@ -9,6 +9,8 @@ and annotate with `@SerdesJson`. That's it!
 ### Model with all required fields
 
 ```dart
+import 'package:serdes_json/serdes_json.dart'
+
 @SerdesJson()
 class NewsListScheme {
   List<NewsItemScheme> news;

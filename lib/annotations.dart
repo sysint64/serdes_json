@@ -1,3 +1,5 @@
+part of serdes_json;
+
 class SerdesJson {
   final bool convertToSnakeCase;
   final bool toJson;
