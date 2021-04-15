@@ -6,6 +6,6 @@ String removeSchemeSuffix(String type) {
   }
 }
 
-bool isPrimitive(String type) {
+bool isPrimitive(String? type) {
   return ['String', 'int', 'num', 'bool', 'double'].contains(type);
 }

@@ -1,5 +1,3 @@
-part of serdes_json;
-
 class SchemeConsistencyException implements Exception {
   final String message;
 
@@ -7,9 +5,13 @@ class SchemeConsistencyException implements Exception {
 
   @override
   String toString() {
-    if (message == null) {
-      return '$SchemeConsistencyException';
-    }
     return '$SchemeConsistencyException: $message';
+  }
+}
+
+// ignore: avoid_positional_boolean_parameters
+void require(bool invariant, Exception Function() exceptionFactory) {
+  if (!invariant) {
+    throw exceptionFactory();
   }
 }

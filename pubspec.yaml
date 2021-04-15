@@ -1,21 +1,22 @@
 name: serdes_json
 description: A simple json serializer and deserializer
-version: 0.0.1
+version: 0.0.1-nullsafety.0
 author: Andrey Kabylin
 homepage: https://github.com/sysint64/serdes_json
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
   flutter: ">=1.17.0"
 
 dependencies:
-  analyzer: ">=0.37.0 <0.40.0"
-  build: ^1.0.0
-  source_gen:
-  equatable: ^1.0.1
-  recase: ^3.0.0
-  localized_string: ^0.1.1
-  optional: ^5.0.0+1
+  analyzer: ^1.4.0
+  build: ^2.0.0
+  source_gen: ^1.0.0
+  equatable: ^2.0.0
+  recase: ^4.0.0-nullsafety.0
+  localized_string: ^0.2.0
+  optional: ^6.0.0-nullsafety.0
+  collection: ^1.15.0-nullsafety.4
 
 dev_dependencies:
   flutter_test:

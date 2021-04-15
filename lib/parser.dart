@@ -36,7 +36,6 @@ class ParseError extends Error {
 }
 
 FieldType parseType(String type) {
-  assert(type != null, 'parseType - type cant be null');
   final tokens = tokenize(StringStream(type));
   final stream = TokenStream(tokens);
 
@@ -71,9 +70,19 @@ FieldType _parsePrimitive(TokenStream stream) {
   final name = stream.head().data;
   stream.nextToken();
 
+  bool optional = false;
+  String sufix = '';
+
+  if (stream.head().data == '?') {
+    optional = true;
+    sufix = '?';
+    stream.nextToken();
+  }
+
   return FieldType(
     name: name,
-    displayName: name,
+    displayName: '$name$sufix',
+    optional: optional,
     isPrimitive: true,
   );
 }
@@ -84,20 +93,39 @@ FieldType _parseNonPrimitive(TokenStream stream) {
 
   if (stream.head().data == '<') {
     final generics = _parseGenerics(stream);
-
     final genericsDisplayName = generics.map((type) => type.displayName).join(', ');
+
+    bool optional = false;
+    String sufix = '';
+
+    if (stream.head().data == '?') {
+      optional = true;
+      sufix = '?';
+      stream.nextToken();
+    }
 
     return FieldType(
       name: name,
-      displayName: '$name<$genericsDisplayName>',
+      displayName: '$name<$genericsDisplayName>$sufix',
       isPrimitive: false,
+      optional: optional,
       generics: generics,
     );
   } else {
+    bool optional = false;
+    String sufix = '';
+
+    if (stream.head().data == '?') {
+      optional = true;
+      sufix = '?';
+      stream.nextToken();
+    }
+
     return FieldType(
       name: name,
-      displayName: name,
+      displayName: '$name$sufix',
       isPrimitive: false,
+      optional: optional,
     );
   }
 }

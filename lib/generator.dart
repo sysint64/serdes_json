@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:serdes_json/parser.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:recase/recase.dart';
@@ -29,7 +30,7 @@ class JsonSerializableGenerator extends GeneratorForAnnotation<SerdesJson> {
       );
     }
 
-    final classElement = element as ClassElement;
+    final classElement = element;
     _convertToSnakeCase = annotation.read('convertToSnakeCase').literalValue as bool;
     _generateToJson = annotation.read('toJson').literalValue as bool;
     _generateFromJson = annotation.read('fromJson').literalValue as bool;
@@ -45,7 +46,7 @@ class JsonSerializableGenerator extends GeneratorForAnnotation<SerdesJson> {
     }
 
     String result = 'class $name {\n';
-    result += '  final ${classElement.name} \$scheme = null;';
+    result += '  final ${classElement.name}? \$scheme = null;';
 
     for (final field in classElement.fields) {
       final type = parseType(field.type.toString());
@@ -105,8 +106,7 @@ class JsonSerializableGenerator extends GeneratorForAnnotation<SerdesJson> {
   String _validators(ClassElement classElement) {
     String result = '';
 
-    final validate =
-        classElement.methods.firstWhere((it) => it.name == 'validate', orElse: () => null);
+    final validate = classElement.methods.firstWhereOrNull((it) => it.name == 'validate');
 
     if (validate != null) {
       result += '    ${classElement.name}.validate(this);\n';
@@ -116,13 +116,17 @@ class JsonSerializableGenerator extends GeneratorForAnnotation<SerdesJson> {
       final fieldName = field.name;
       final type = parseType(field.type.toString());
 
-//      result += '    ';
+      if (type.optional && _isEnum(type)) {
+        final acceptable = '${type.displayName}.acceptable';
 
-      // ignore: use_string_buffers
-      result +=
-          '    require($fieldName != null, () => SchemeConsistencyException(\'"$fieldName" should not be null\'));\n';
-
-      if (_isEnum(type)) {
+        result += '\n';
+        result += '    if ($fieldName != null) {\n';
+        result += '      final value = $fieldName!;\n';
+        result +=
+            '      require($acceptable.contains(value), () => SchemeConsistencyException(\'"$fieldName" has a wrong value = \$value; acceptable values is: \${$acceptable}\'));\n';
+        result += '    }\n';
+        result += '\n';
+      } else if (_isEnum(type)) {
         final acceptable = '${type.displayName}.acceptable';
         result +=
             '    require($acceptable.contains($fieldName), () => SchemeConsistencyException(\'"$fieldName" has a wrong value = \$$fieldName; acceptable values is: \${$acceptable}\'));\n';
@@ -175,23 +179,11 @@ class JsonSerializableGenerator extends GeneratorForAnnotation<SerdesJson> {
       if (type.name == 'Optional') {
         result += '    this.${field.name} = const Optional.empty(),\n';
       } else {
-        result += '    @required this.${field.name},\n';
+        result += '    required this.${field.name},\n';
       }
     }
 
-    result += '  })   :';
-    var margin = 1;
-
-    for (final field in classElement.fields) {
-      // ignore: use_string_buffers
-      result += '${' ' * margin}assert(${field.name} != null),\n';
-      margin = 8;
-    }
-
-    // Remove last comma and line break
-    result = result.substring(0, result.length - 2);
-    result += ';\n';
-
+    result += '  });\n';
     return result;
   }
 
@@ -351,20 +343,29 @@ class JsonSerializableGenerator extends GeneratorForAnnotation<SerdesJson> {
     return result;
   }
 
-  String _accessor(FieldType type, String fieldName, [String accessor]) {
+  String _accessor(FieldType type, String? fieldName, [String? accessor]) {
     final typeName = type.displayName;
 
-    String jsonFieldName = fieldName;
+    String? jsonFieldName = fieldName;
 
     if (_convertToSnakeCase && fieldName != null) {
       jsonFieldName = fieldName.snakeCase;
     }
 
     if (accessor == null && type.name != 'Map') {
-      accessor = 'getJsonValue(json, \'$jsonFieldName\')';
+      if (type.optional) {
+        accessor = 'getJsonValueOrNull(json, \'$jsonFieldName\')';
+      } else {
+        accessor = 'getJsonValue(json, \'$jsonFieldName\')';
+      }
     } else if (accessor == null && type.name == 'Map') {
-      // ignore: parameter_assignments
-      accessor = 'getJsonMap(json, \'$jsonFieldName\')';
+      if (type.optional) {
+        // ignore: parameter_assignments
+        accessor = 'getJsonMapOrNull(json, \'$jsonFieldName\')';
+      } else {
+        // ignore: parameter_assignments
+        accessor = 'getJsonMap(json, \'$jsonFieldName\')';
+      }
     }
 
     if (_isEnum(type)) {
@@ -377,7 +378,7 @@ class JsonSerializableGenerator extends GeneratorForAnnotation<SerdesJson> {
     }
 
     if (type.isPrimitive) {
-      return accessor;
+      return accessor!;
     } else if (type.generics.isEmpty) {
       return '$typeName.fromJson($accessor)';
     } else if (type.name == 'Optional') {
@@ -408,10 +409,18 @@ class JsonSerializableGenerator extends GeneratorForAnnotation<SerdesJson> {
           subTypeName = subType.displayName;
         }
 
-        return 'getJsonList<$subTypeName>(json, \'$jsonFieldName\')';
+        if (type.optional) {
+          return 'getJsonListOrNull<$subTypeName>(json, \'$jsonFieldName\')';
+        } else {
+          return 'getJsonList<$subTypeName>(json, \'$jsonFieldName\')';
+        }
       } else {
         final subAccessor = _accessor(type.generics[0], null, 'it');
-        return 'transformJsonListOfMap(json, \'$jsonFieldName\', (it) => $subAccessor)';
+        if (type.optional) {
+          return 'transformJsonListOfMapOrNull(json, \'$jsonFieldName\', (it) => $subAccessor)';
+        } else {
+          return 'transformJsonListOfMap(json, \'$jsonFieldName\', (it) => $subAccessor)';
+        }
       }
     } else {
       throw UnsupportedError('Unsupported type: $typeName');
@@ -419,10 +428,10 @@ class JsonSerializableGenerator extends GeneratorForAnnotation<SerdesJson> {
   }
 
   // TODO: merge with _accessor
-  String _optionalAccessor(FieldType type, String fieldName, [String accessor]) {
+  String _optionalAccessor(FieldType type, String? fieldName, [String? accessor]) {
     final typeName = type.displayName;
 
-    String jsonFieldName = fieldName;
+    String? jsonFieldName = fieldName;
 
     if (_convertToSnakeCase && fieldName != null) {
       jsonFieldName = fieldName.snakeCase;

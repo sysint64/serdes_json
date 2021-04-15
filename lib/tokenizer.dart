@@ -10,15 +10,15 @@ class Token extends Equatable {
   final TokenType tokenType;
   final String data;
 
-  const Token({this.tokenType, this.data});
+  const Token({required this.tokenType, required this.data});
 
   const Token.eof()
       : tokenType = TokenType.eof,
         data = '';
 
   Token copyWith({
-    TokenType tokenType,
-    String data,
+    TokenType? tokenType,
+    String? data,
   }) {
     return Token(
       tokenType: tokenType ?? this.tokenType,
@@ -27,7 +27,7 @@ class Token extends Equatable {
   }
 
   @override
-  List<Object> get props => [tokenType, data];
+  List<Object?> get props => [tokenType, data];
 
   @override
   String toString() {
@@ -60,8 +60,6 @@ class StringStream {
 }
 
 List<Token> tokenize(StringStream input) {
-  assert(input != null);
-
   final res = <Token>[];
 
   while (input.isNotEmpty) {

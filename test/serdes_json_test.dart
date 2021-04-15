@@ -6,7 +6,8 @@ import 'package:serdes_json/parser.dart';
 void main() {
   test('parse primitive', () async {
     expect(FieldType(isPrimitive: true, name: 'int', displayName: 'int'), parseType('int'));
-    expect(FieldType(isPrimitive: true, name: 'String', displayName: 'String'), parseType('String'));
+    expect(
+        FieldType(isPrimitive: true, name: 'String', displayName: 'String'), parseType('String'));
     expect(FieldType(isPrimitive: true, name: 'bool', displayName: 'bool'), parseType('bool'));
     expect(FieldType(isPrimitive: true, name: 'num', displayName: 'num'), parseType('num'));
     expect(FieldType(isPrimitive: true, name: 'num', displayName: 'num'), parseType(' num'));
@@ -71,6 +72,44 @@ void main() {
                 displayName: 'int',
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  });
+
+  test('parse nested generic', () async {
+    expect(
+      parseType('Box<int?>'),
+      FieldType(
+        isPrimitive: false,
+        name: 'Box',
+        displayName: 'Box<int?>',
+        generics: [
+          FieldType(
+            isPrimitive: true,
+            name: 'int',
+            displayName: 'int?',
+            optional: true,
+          ),
+        ],
+      ),
+    );
+  });
+
+  test('parse nested generic', () async {
+    expect(
+      parseType('Box<int>?'),
+      FieldType(
+        isPrimitive: false,
+        name: 'Box',
+        displayName: 'Box<int>?',
+        optional: true,
+        generics: [
+          FieldType(
+            isPrimitive: true,
+            name: 'int',
+            displayName: 'int',
           ),
         ],
       ),
@@ -327,6 +366,19 @@ void main() {
         Token(tokenType: TokenType.id, data: 'List'),
         Token(tokenType: TokenType.symbol, data: '<'),
         Token(tokenType: TokenType.id, data: 'bool'),
+        Token(tokenType: TokenType.symbol, data: '>'),
+      ],
+    );
+  });
+
+  test('tokenize compound List<bool?>', () async {
+    expect(
+      tokenize(StringStream('List<bool?>')),
+      [
+        Token(tokenType: TokenType.id, data: 'List'),
+        Token(tokenType: TokenType.symbol, data: '<'),
+        Token(tokenType: TokenType.id, data: 'bool'),
+        Token(tokenType: TokenType.symbol, data: '?'),
         Token(tokenType: TokenType.symbol, data: '>'),
       ],
     );
