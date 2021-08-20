@@ -82,7 +82,7 @@ FieldType _parsePrimitive(TokenStream stream) {
   return FieldType(
     name: name,
     displayName: '$name$sufix',
-    optional: optional,
+    isOptional: optional,
     isPrimitive: true,
   );
 }
@@ -108,7 +108,7 @@ FieldType _parseNonPrimitive(TokenStream stream) {
       name: name,
       displayName: '$name<$genericsDisplayName>$sufix',
       isPrimitive: false,
-      optional: optional,
+      isOptional: optional,
       generics: generics,
     );
   } else {
@@ -125,7 +125,7 @@ FieldType _parseNonPrimitive(TokenStream stream) {
       name: name,
       displayName: '$name$sufix',
       isPrimitive: false,
-      optional: optional,
+      isOptional: optional,
     );
   }
 }

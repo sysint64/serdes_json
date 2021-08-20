@@ -90,7 +90,7 @@ void main() {
             isPrimitive: true,
             name: 'int',
             displayName: 'int?',
-            optional: true,
+            isOptional: true,
           ),
         ],
       ),
@@ -104,7 +104,7 @@ void main() {
         isPrimitive: false,
         name: 'Box',
         displayName: 'Box<int>?',
-        optional: true,
+        isOptional: true,
         generics: [
           FieldType(
             isPrimitive: true,

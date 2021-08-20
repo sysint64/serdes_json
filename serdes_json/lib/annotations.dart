@@ -6,6 +6,7 @@ class SerdesJson {
   final bool fromJson;
   final bool toStringJson;
   final bool fromStringJson;
+  final String endsWith;
 
   const SerdesJson({
     this.convertToSnakeCase = false,
@@ -13,5 +14,6 @@ class SerdesJson {
     this.fromJson = true,
     this.toStringJson = true,
     this.fromStringJson = true,
+    this.endsWith = 'Scheme',
   });
 }

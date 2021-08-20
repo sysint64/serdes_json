@@ -1,5 +1,12 @@
 import 'package:equatable/equatable.dart';
 
+class Field {
+  final String name;
+  final FieldType type;
+
+  Field(this.name, this.type);
+}
+
 // ignore: must_be_immutable
 class FieldType extends Equatable {
   FieldType? parent;
@@ -7,7 +14,7 @@ class FieldType extends Equatable {
   final List<FieldType> generics;
   final bool isPrimitive;
   final String displayName;
-  final bool optional;
+  final bool isOptional;
 
   FieldType({
     required this.name,
@@ -15,7 +22,7 @@ class FieldType extends Equatable {
     required this.isPrimitive,
     this.generics = const [],
     this.parent,
-    this.optional = false,
+    this.isOptional = false,
   }) {
     for (final generic in generics) {
       generic.parent = this;
@@ -23,7 +30,7 @@ class FieldType extends Equatable {
   }
 
   @override
-  List<Object> get props => [name, generics, isPrimitive, optional, displayName];
+  List<Object> get props => [name, generics, isPrimitive, isOptional, displayName];
 
   FieldType copyWith({
     String? name,
@@ -41,5 +48,5 @@ class FieldType extends Equatable {
 
   @override
   String toString() =>
-      'FieldType(name: $name, displayName: $displayName, isPrimitive: $isPrimitive, optional: $optional, generic: $generics)';
+      'FieldType(name: $name, displayName: $displayName, isPrimitive: $isPrimitive, optional: $isOptional, generic: $generics)';
 }
