@@ -56,10 +56,6 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
         result += '  final String $fieldName;\n';
       } else if (type.generics.length == 1 && _isEnum(type.generics[0])) {
         result += '  final ${type.name}<String> $fieldName;\n';
-      } else if (type.name == 'Optional' &&
-          type.generics[0].name == 'List' &&
-          _isEnum(type.generics[0].generics[0])) {
-        result += '  final Optional<List<String>> $fieldName;\n';
       } else {
         result += '  final ${type.displayName} $fieldName;\n';
       }
@@ -94,12 +90,6 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
 
     result += '}';
 
-//    var commentted = '';
-//
-//    for (final line in result.split('\n')) {
-//      commentted += '// $line\n';
-//    }
-
     return result;
   }
 
@@ -130,16 +120,6 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
         final acceptable = '${type.displayName}.acceptable';
         result +=
             '    require($acceptable.contains($fieldName), () => SchemeConsistencyException(\'"$fieldName" has a wrong value = \$$fieldName; acceptable values is: \${$acceptable}\'));\n';
-      } else if (type.name == 'Optional' && _isEnum(type.generics[0])) {
-        final acceptable = '${type.generics[0].displayName}.acceptable';
-
-        result += '\n';
-        result += '    if ($fieldName.isPresent) {\n';
-        result += '      final value = $fieldName.value;\n';
-        result +=
-            '      require($acceptable.contains(value), () => SchemeConsistencyException(\'"$fieldName" has a wrong value = \$value; acceptable values is: \${$acceptable}\'));\n';
-        result += '    }\n';
-        result += '\n';
       } else if (type.name == 'List' && _isEnum(type.generics[0])) {
         final acceptable = '${type.generics[0].displayName}.acceptable';
 
@@ -147,19 +127,6 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
         result += '    for (final value in $fieldName) {\n';
         result +=
             '      require($acceptable.contains(value), () => SchemeConsistencyException(\'"$fieldName" has a wrong value = \$value; acceptable values is: \${$acceptable}\'));\n';
-        result += '    }\n';
-        result += '\n';
-      } else if (type.name == 'Optional' &&
-          type.generics[0].name == 'List' &&
-          _isEnum(type.generics[0].generics[0])) {
-        final acceptable = '${type.generics[0].generics[0].displayName}.acceptable';
-
-        result += '\n';
-        result += '    if ($fieldName.isPresent) {\n';
-        result += '      for (final value in $fieldName.value) {\n';
-        result +=
-            '        require($acceptable.contains(value), () => SchemeConsistencyException(\'"$fieldName" has a wrong value = \$value; acceptable values is: \${$acceptable}\'));\n';
-        result += '      }\n';
         result += '    }\n';
         result += '\n';
       }
@@ -176,10 +143,10 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
     for (final field in classElement.fields) {
       final type = parseType(field.type.toString());
 
-      if (type.name == 'Optional') {
-        result += '    this.${field.name} = const Optional.empty(),\n';
-      } else {
+      if (!type.optional) {
         result += '    required this.${field.name},\n';
+      } else {
+        result += 'this.${field.name},\n';
       }
     }
 
@@ -213,28 +180,8 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
         );
       }
 
-      if (type.name == 'Optional') {
-        var optionalType = type.generics[0];
-
-        if (_isEnum(optionalType)) {
-          optionalType = FieldType(
-            name: 'String',
-            displayName: 'String',
-            isPrimitive: true,
-          );
-        }
-
-        final writer = _writerOptional(optionalType, fieldName);
-
-        result += '\n';
-        result += '    if ($fieldName.isPresent) {\n';
-        result += '      \$result[\'$jsonFieldName\'] = $writer;\n';
-        result += '    }\n';
-        result += '\n';
-      } else {
-        final writer = _writer(type, fieldName);
-        result += '    \$result[\'$jsonFieldName\'] = $writer;\n';
-      }
+      final writer = _writer(type, fieldName);
+      result += '    \$result[\'$jsonFieldName\'] = $writer;\n';
     }
 
     result += '\n';
@@ -250,16 +197,18 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
   }
 
   String _fromStringJson(String name) {
-    return '  static $name fromStringJson(String json) => $name.fromJson(jsonDecode(json));';
+    return '  static $name fromStringJson(String json) => $name.fromJson(jsonDecode(json) as Map<String, dynamic>);';
   }
 
   String _writer(FieldType type, String fieldName) {
     if (type.isPrimitive) {
       return fieldName;
     } else if (type.generics.isEmpty) {
-      return '$fieldName.toJson()';
-    } else if (type.name == 'Optional') {
-      throw StateError('Should not be used with Optional type');
+      if (type.optional) {
+        return '$fieldName?.toJson()';
+      } else {
+        return '$fieldName.toJson()';
+      }
     } else if (type.name == 'Map') {
       final keyType = type.generics[0];
       final valueType = type.generics[1];
@@ -272,47 +221,29 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
         return fieldName;
       } else {
         final value = _writer(valueType, 'value');
-        return '$fieldName.map((key, value) => MapEntry<String, dynamic>(key, $value))';
+        if (type.optional) {
+          return '$fieldName?.map<String, dynamic>((key, value) => MapEntry<String, dynamic>(key, $value))';
+        } else {
+          return '$fieldName.map<String, dynamic>((key, value) => MapEntry<String, dynamic>(key, $value))';
+        }
       }
     } else if (type.name == 'List') {
       final subType = type.generics[0];
 
       if (subType.isPrimitive || _isEnum(subType)) {
         return '$fieldName.toList()';
+      } else if (type.optional) {
+        if (subType.optional) {
+          return '$fieldName?.map((it) => it?.toJson()).toList()';
+        } else {
+          return '$fieldName?.map((it) => it.toJson()).toList()';
+        }
       } else {
-        return '$fieldName.map((it) => it.toJson()).toList()';
-      }
-    } else {
-      throw UnsupportedError('Unsupported type: $fieldName');
-    }
-  }
-
-  String _writerOptional(FieldType type, String fieldName) {
-    if (type.isPrimitive) {
-      return '$fieldName.value';
-    } else if (type.generics.isEmpty) {
-      return '$fieldName.value.toJson()';
-    } else if (type.name == 'Map') {
-      final keyType = type.generics[0];
-      final valueType = type.generics[1];
-
-      if (keyType.name != 'String') {
-        throw UnsupportedError('Unsupported type: $fieldName');
-      }
-
-      if (valueType.isPrimitive || valueType.name == 'dynamic') {
-        return '$fieldName.value';
-      } else {
-        final value = _writer(valueType, 'value');
-        return '$fieldName.value.map((key, value) => MapEntry<String, dynamic>(key, $value))';
-      }
-    } else if (type.name == 'List') {
-      final subType = type.generics[0];
-
-      if (subType.isPrimitive || _isEnum(subType)) {
-        return '$fieldName.value.toList();';
-      } else {
-        return '$fieldName.value.map((it) => it.toJson()).toList();';
+        if (subType.optional) {
+          return '$fieldName.map((it) => it?.toJson()).toList()';
+        } else {
+          return '$fieldName.map((it) => it.toJson()).toList()';
+        }
       }
     } else {
       throw UnsupportedError('Unsupported type: $fieldName');
@@ -359,12 +290,24 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
         accessor = 'getJsonValue(json, \'$jsonFieldName\')';
       }
     } else if (accessor == null && type.name == 'Map') {
-      if (type.optional) {
-        // ignore: parameter_assignments
-        accessor = 'getJsonMapOrNull(json, \'$jsonFieldName\')';
+      if (type.isPrimitive) {
+        if (type.optional) {
+          accessor = 'getJsonMapOrNull<dynamic>(json, \'$jsonFieldName\')';
+        } else {
+          accessor = 'getJsonMapOrNull<dynamic>(json, \'$jsonFieldName\')';
+        }
+      } else if (type.optional) {
+        if (type.generics[1].optional) {
+          accessor = 'getJsonMapOrNull<Map<String, dynamic>?>(json, \'$jsonFieldName\')';
+        } else {
+          accessor = 'getJsonMapOrNull<Map<String, dynamic>>(json, \'$jsonFieldName\')';
+        }
       } else {
-        // ignore: parameter_assignments
-        accessor = 'getJsonMap(json, \'$jsonFieldName\')';
+        if (type.generics[1].optional) {
+          accessor = 'getJsonMap<Map<String, dynamic>?>(json, \'$jsonFieldName\')';
+        } else {
+          accessor = 'getJsonMap<Map<String, dynamic>>(json, \'$jsonFieldName\')';
+        }
       }
     }
 
@@ -381,8 +324,6 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
       return accessor!;
     } else if (type.generics.isEmpty) {
       return '$typeName.fromJson($accessor)';
-    } else if (type.name == 'Optional') {
-      return _optionalAccessor(type.generics[0], fieldName);
     } else if (type.name == 'Map') {
       final keyType = type.generics[0];
       final valueType = type.generics[1];
@@ -392,10 +333,17 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
       }
 
       if (valueType.isPrimitive || valueType.name == 'dynamic') {
-        return '$accessor.map((key, value) => MapEntry<String, ${valueType.displayName}>(key, value as ${valueType.displayName}))';
+        final mapAccessor = type.optional ? '$accessor?' : accessor;
+        return '$mapAccessor.map<String, ${valueType.displayName}>((key, dynamic value) => MapEntry<String, ${valueType.displayName}>(key, value as ${valueType.displayName}))';
       } else {
+        final mapAccessor = type.optional ? '$accessor?' : accessor;
         final value = _accessor(valueType, null, 'value');
-        return '$accessor.map((key, value) => MapEntry<String, ${valueType.displayName}>(key, $value))';
+
+        if (valueType.optional) {
+          return '$mapAccessor.map<String, ${valueType.displayName}>((key, Map<String, dynamic>? value) => MapEntry<String, ${valueType.displayName}>(key, value == null ? null : $value))';
+        } else {
+          return '$mapAccessor.map<String, ${valueType.displayName}>((key, Map<String, dynamic> value) => MapEntry<String, ${valueType.displayName}>(key, $value))';
+        }
       }
     } else if (type.name == 'List') {
       final subType = type.generics[0];
@@ -421,45 +369,6 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
         } else {
           return 'transformJsonListOfMap(json, \'$jsonFieldName\', (it) => $subAccessor)';
         }
-      }
-    } else {
-      throw UnsupportedError('Unsupported type: $typeName');
-    }
-  }
-
-  // TODO: merge with _accessor
-  String _optionalAccessor(FieldType type, String? fieldName, [String? accessor]) {
-    final typeName = type.displayName;
-
-    String? jsonFieldName = fieldName;
-
-    if (_convertToSnakeCase && fieldName != null) {
-      jsonFieldName = fieldName.snakeCase;
-    }
-
-    accessor ??= 'getJsonValueOrEmpty(json, \'$jsonFieldName\')';
-
-    if (type.isPrimitive || _isEnum(type)) {
-      return accessor;
-    } else if (type.generics.isEmpty) {
-      final subAccessor = _accessor(type, null, 'it');
-      return 'transformJsonValueOrEmpty(json, \'$jsonFieldName\', (it) => $subAccessor)';
-    } else if (type.name == 'List') {
-      final subType = type.generics[0];
-
-      if (subType.isPrimitive || _isEnum(subType)) {
-        String subTypeName;
-
-        if (_isEnum(subType)) {
-          subTypeName = 'String';
-        } else {
-          subTypeName = subType.displayName;
-        }
-
-        return 'getJsonListOrEmpty<$subTypeName>(json, \'$jsonFieldName\')';
-      } else {
-        final subAccessor = _accessor(type.generics[0], null, 'it');
-        return 'transformJsonListOfMapOrEmpty(json, \'$jsonFieldName\', (it) => $subAccessor)';
       }
     } else {
       throw UnsupportedError('Unsupported type: $typeName');

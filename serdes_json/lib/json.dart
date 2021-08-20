@@ -163,3 +163,41 @@ List<T>? getJsonListOrNull<T>(
     return null;
   }
 }
+
+Map<String, T> getJsonMap<T>(Map<String, dynamic> json, String key) {
+  final Map<String, dynamic> map = getJsonValue(json, key);
+
+  MapEntry<String, T> mapper(String key, dynamic value) {
+    if (value is T) {
+      return MapEntry<String, T>(key, value);
+    } else {
+      throw SchemeConsistencyException(
+        'Wrong type by key "$key", expected: "List<$T>" '
+        'but has got element in list of type: "${value.runtimeType}"',
+      );
+    }
+  }
+
+  return map.isEmpty ? <String, T>{} : map.map(mapper);
+}
+
+Map<String, T>? getJsonMapOrNull<T>(Map<String, dynamic> json, String key) {
+  if (json.containsKey(key) && json[key] != null) {
+    final Map<String, dynamic> map = getJsonValue(json, key);
+
+    MapEntry<String, T> mapper(String key, dynamic value) {
+      if (value is T) {
+        return MapEntry<String, T>(key, value);
+      } else {
+        throw SchemeConsistencyException(
+          'Wrong type by key "$key", expected: "List<$T>" '
+          'but has got element in list of type: "${value.runtimeType}"',
+        );
+      }
+    }
+
+    return map.isEmpty ? <String, T>{} : map.map(mapper);
+  } else {
+    return null;
+  }
+}
