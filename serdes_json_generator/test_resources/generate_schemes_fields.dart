@@ -1,23 +1,17 @@
 class Test {
   final TestScheme? $scheme = null;
 
-  final int v1;
-  final int? v2;
-  final String v3;
-  final String? v4;
+  final User v1;
+  final Book? v2;
 
   Test({
     required this.v1,
     this.v2,
-    required this.v3,
-    this.v4,
   });
 
   Test.fromJson(Map<String, dynamic> json)
-      : v1 = getJsonValue(json, 'v1'),
-        v2 = getJsonValueOrNull(json, 'v2'),
-        v3 = getJsonValue(json, 'v3'),
-        v4 = getJsonValueOrNull(json, 'v4')
+      : v1 = transformJsonValue<User, Map<String, dynamic>>(json, 'v1', (Map<String, dynamic> data) => User.fromJson(data)),
+        v2 = transformJsonValueOrNull<Book, Map<String, dynamic>>(json, 'v2', (Map<String, dynamic> data) => Book.fromJson(data))
   {
   }
 
@@ -26,10 +20,8 @@ class Test {
   Map<String, dynamic> toJson() {
     final $result = <String, dynamic>{};
 
-    $result['v1'] = v1;
-    $result['v2'] = v2;
-    $result['v3'] = v3;
-    $result['v4'] = v4;
+    $result['v1'] = v1.toJson();
+    $result['v2'] = v2?.toJson();
 
     return $result;
   }

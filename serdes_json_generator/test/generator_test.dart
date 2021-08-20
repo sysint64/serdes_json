@@ -6,16 +6,25 @@ import 'package:serdes_json_generator/parser.dart';
 import 'package:serdes_json_generator/serdes_generator.dart';
 
 void main() {
-  final primitivesFields = <Field>[
-    Field('v1', parseType('int')),
-    Field('v2', parseType('int?')),
-    Field('v3', parseType('String')),
-    Field('v4', parseType('String?')),
-  ];
-
-  test('generateClassFields - primitivesFields', () async {
-    final fields = SerdesGenerator().generateClass('TestScheme', 'Test', primitivesFields);
+  test('genrate class - primitivesFields', () async {
+    final primitivesFields = <Field>[
+      Field('v1', parseType('int')),
+      Field('v2', parseType('int?')),
+      Field('v3', parseType('String')),
+      Field('v4', parseType('String?')),
+    ];
+    final result = SerdesGenerator().generateClass('TestScheme', 'Test', primitivesFields);
     final file = File('test_resources/generate_primitives_fields.dart');
-    expect(fields, await file.readAsString());
+    expect(result, await file.readAsString());
+  });
+
+  test('generate class - schemeFields', () async {
+    final schemeFields = <Field>[
+      Field('v1', parseType('User')),
+      Field('v2', parseType('Book?')),
+    ];
+    final result = SerdesGenerator().generateClass('TestScheme', 'Test', schemeFields);
+    final file = File('test_resources/generate_schemes_fields.dart');
+    expect(result, await file.readAsString());
   });
 }

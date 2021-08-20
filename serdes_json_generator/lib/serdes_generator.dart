@@ -136,6 +136,8 @@ class SerdesGenerator {
       result.writeln('    \$result[\'$jsonFieldName\'] = $writer;');
     }
 
+    result.writeln();
+    result.writeln('    return \$result;');
     result.writeln('  }');
 
     return result.toString();
@@ -148,20 +150,26 @@ class SerdesGenerator {
   String _jsonMapGetter(FieldType type, String? fieldName) {
     final typeName = type.displayName;
     String? jsonFieldName = fieldName;
-    String? accessor;
 
     if (shouldConvertToSnakeCase && fieldName != null) {
       jsonFieldName = fieldName.snakeCase;
     }
 
-    if (type.isOptional) {
-      accessor = 'getJsonValueOrNull(json, \'$jsonFieldName\')';
-    } else {
-      accessor = 'getJsonValue(json, \'$jsonFieldName\')';
-    }
-
     if (type.isPrimitive) {
-      return accessor;
+      if (type.isOptional) {
+        return 'getJsonValueOrNull(json, \'$jsonFieldName\')';
+      } else {
+        return 'getJsonValue(json, \'$jsonFieldName\')';
+      }
+    } else if (type.generics.isEmpty) {
+      final args =
+          'json, \'$jsonFieldName\', (Map<String, dynamic> data) => ${type.name}.fromJson(data)';
+
+      if (type.isOptional) {
+        return 'transformJsonValueOrNull<${type.name}, Map<String, dynamic>>($args)';
+      } else {
+        return 'transformJsonValue<${type.name}, Map<String, dynamic>>($args)';
+      }
     } else {
       throw UnsupportedError('Unsupported type: $typeName');
     }
@@ -170,6 +178,12 @@ class SerdesGenerator {
   String _jsonMapWriter(FieldType type, String fieldName) {
     if (type.isPrimitive) {
       return fieldName;
+    } else if (type.generics.isEmpty) {
+      if (type.isOptional) {
+        return '$fieldName?.toJson()';
+      } else {
+        return '$fieldName.toJson()';
+      }
     } else {
       throw UnsupportedError('Unsupported type: $fieldName');
     }

@@ -28,6 +28,15 @@ T? getJsonValueOrNull<T>(
   }
 }
 
+T transformJsonValue<T, R>(
+  Map<String, dynamic> json,
+  String key,
+  T Function(R) transform,
+) {
+  final value = getJsonValue<R>(json, key);
+  return transform(value);
+}
+
 T? transformJsonValueOrNull<T, R>(
   Map<String, dynamic> json,
   String key,
