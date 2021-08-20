@@ -1,3 +1,5 @@
+part of serdes_json;
+
 class SchemeConsistencyException implements Exception {
   final String message;
 

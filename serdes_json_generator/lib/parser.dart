@@ -1,6 +1,6 @@
-import 'package:serdes_json/helpers.dart';
-import 'package:serdes_json/models.dart';
-import 'package:serdes_json/tokenizer.dart';
+import 'package:serdes_json_generator/helpers.dart';
+import 'package:serdes_json_generator/models.dart';
+import 'package:serdes_json_generator/tokenizer.dart';
 
 class TokenStream {
   final List<Token> _tokens;

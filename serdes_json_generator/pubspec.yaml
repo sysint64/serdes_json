@@ -1,5 +1,5 @@
-name: serdes_json
-description: A simple json serializer and deserializer
+name: serdes_json_generator
+description: A simple json serializer and deserializer model generator
 version: 0.0.1-nullsafety.0
 author: Andrey Kabylin
 homepage: https://github.com/sysint64/serdes_json
@@ -17,6 +17,8 @@ dependencies:
   localized_string: ^0.2.0
   optional: ^6.0.0-nullsafety.0
   collection: ^1.15.0-nullsafety.4
+  serdes_json:
+    path: ../serdes_json
 
 dev_dependencies:
   flutter_test:

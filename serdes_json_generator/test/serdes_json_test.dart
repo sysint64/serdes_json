@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:serdes_json/models.dart';
-import 'package:serdes_json/tokenizer.dart';
-import 'package:serdes_json/parser.dart';
+import 'package:serdes_json_generator/models.dart';
+import 'package:serdes_json_generator/tokenizer.dart';
+import 'package:serdes_json_generator/parser.dart';
 
 void main() {
   test('parse primitive', () async {

@@ -1,11 +1,11 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:collection/collection.dart' show IterableExtension;
-import 'package:serdes_json/parser.dart';
+import 'package:serdes_json/serdes_json.dart';
+import 'package:serdes_json_generator/parser.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:recase/recase.dart';
 
-import 'serdes_json.dart';
 import 'models.dart';
 
 class JsonSerializableGenerator extends GeneratorForAnnotation<SerdesJson> {
