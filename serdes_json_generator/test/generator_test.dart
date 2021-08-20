@@ -37,7 +37,7 @@ void main() {
       Field('v5', parseType('List<User?>')),
       Field('v6', parseType('List<User>?')),
       Field('v7', parseType('List<List<Book>>')),
-      Field('v7', parseType('List<List<List<Book?>?>>')),
+      Field('v8', parseType('List<List<List<Book?>?>>')),
     ];
     final result = SerdesGenerator().generateClass('TestScheme', 'Test', schemeFields);
     final file = File('test_resources/generate_lists_fields.dart');

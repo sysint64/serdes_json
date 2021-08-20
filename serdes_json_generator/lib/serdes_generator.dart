@@ -165,17 +165,21 @@ class SerdesGenerator {
     }
   }
 
-  String _itemConstructor(FieldType type, String it) {
+  String _fromJsonItemConstructor(FieldType type, String it) {
     if (type.isPrimitive) {
       return '$it as ${type.displayName}';
     } else if (type.generics.isEmpty) {
-      return '${type.name}.fromJson($it as Map<String, dynamic>)';
+      if (type.isOptional) {
+        return '$it == null ? null : ${type.name}.fromJson($it as Map<String, dynamic>)';
+      } else {
+        return '${type.name}.fromJson($it as Map<String, dynamic>)';
+      }
     } else if (type.name == 'List') {
       final subType = type.generics[0];
-      final itemConstructor = _itemConstructor(subType, 'it');
+      final itemConstructor = _fromJsonItemConstructor(subType, 'it');
 
       if (subType.isOptional) {
-        return '($it as Iterable<dynamic>).where((dynamic it) => it != null).map((dynamic it) => $itemConstructor).toList()';
+        return '($it as Iterable<dynamic>).map((dynamic it) => it == null ? null : $itemConstructor).toList()';
       } else {
         return '($it as Iterable<dynamic>).map((dynamic it) => $itemConstructor).toList()';
       }
@@ -204,12 +208,35 @@ class SerdesGenerator {
 
   String _jsonListGetter(FieldType type, String fieldName, String json) {
     final subType = type.generics[0];
-    final itemConstructor = _itemConstructor(subType, 'it');
+    final itemConstructor = _fromJsonItemConstructor(subType, 'it');
 
     if (type.isOptional) {
       return 'transformJsonListOfMapOrNull<${subType.displayName}, dynamic>($json, \'$fieldName\', (dynamic it) => $itemConstructor)';
     } else {
       return 'transformJsonListOfMap<${subType.displayName}, dynamic>($json, \'$fieldName\', (dynamic it) => $itemConstructor)';
+    }
+  }
+
+  String _toJsonItemConstructor(FieldType type, String it) {
+    if (type.isPrimitive) {
+      return it;
+    } else if (type.generics.isEmpty) {
+      if (type.isOptional) {
+        return '$it?.toJson()';
+      } else {
+        return '$it.toJson()';
+      }
+    } else if (type.name == 'List') {
+      final subType = type.generics[0];
+      final itemConstructor = _fromJsonItemConstructor(subType, 'it');
+
+      if (subType.isOptional) {
+        return '($it as Iterable<dynamic>).map((dynamic it) => it == null ? null : $itemConstructor).toList()';
+      } else {
+        return '($it as Iterable<dynamic>).map((dynamic it) => $itemConstructor).toList()';
+      }
+    } else {
+      throw UnsupportedError('Unsupported type: ${type.displayName}');
     }
   }
 
@@ -222,9 +249,17 @@ class SerdesGenerator {
       } else {
         return '$fieldName.toJson()';
       }
+    } else if (type.name == 'List') {
+      final subType = type.generics[0];
+      final itemConstructor = _jsonSetter(subType, 'it');
+
+      if (type.isOptional) {
+        return '$fieldName?.map((${subType.displayName} it) => $itemConstructor).toList()';
+      } else {
+        return '$fieldName.map((${subType.displayName} it) => $itemConstructor).toList()';
+      }
     } else {
-      return '1';
-      // throw UnsupportedError('Unsupported type: ${type.name}');
+      throw UnsupportedError('Unsupported type: ${type.name}');
     }
   }
 }
