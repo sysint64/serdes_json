@@ -1,6 +1,6 @@
 builders:
   json_models_builder:
-    import: "package:serdes_json/builder.dart"
+    import: "package:serdes_json_generator/builder.dart"
     builder_factories: ["jsonBuilder"]
     build_extensions: {".dart": [".multiply.g.part"]}
     auto_apply: dependents
