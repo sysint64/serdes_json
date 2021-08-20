@@ -8,7 +8,7 @@ import 'package:recase/recase.dart';
 
 import 'models.dart';
 
-class JsonSerializableGenerator extends GeneratorForAnnotation<SerdesJson> {
+class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
   bool _convertToSnakeCase = false;
   bool _generateToJson = true;
   bool _generateFromJson = true;

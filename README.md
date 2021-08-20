@@ -13,17 +13,17 @@ import 'package:serdes_json/serdes_json.dart'
 
 @SerdesJson()
 class NewsListScheme {
-  List<NewsItemScheme> news;
+  late List<NewsItemScheme> news;
 }
 ```
 
 ```dart
 @SerdesJson()
 class NewsItemScheme {
-  int id;
-  String title;
-  String description;
-  int commentsCount;
+  late int id;
+  late String title;
+  late String description;
+  late int commentsCount;
 }
 ```
 
@@ -34,26 +34,29 @@ To convert all names to snake case, add `convertToSnakeCase: true` to the annota
 ```dart
 @SerdesJson(convertToSnakeCase: true)
 class NewsItemScheme {
-  int id;
-  String title;
-  String description;
-  int commentsCount;
+  late int id;
+  late String title;
+  late String description;
+  late int commentsCount;
 }
 ```
 
 ### Optional
 
 By default all fields are required, and if there will not be a field, then parser will throw the `SchemeConsistencyException`.
-To describe optional fields use [optional](https://pub.dev/packages/optional) library:
+To describe optional fields:
 
 ```dart
 @SerdesJson()
 class PayloadScheme {
-  Optional<Map<dynamic, dynamic>> result;
-  Optional<ErrorScheme> error;
+  late Map<dynamic, dynamic>? result;
+  late ErrorScheme? error;
 }
 ```
 
+### Enums
+
+TBD
 
 ### To json
 

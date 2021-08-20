@@ -4,4 +4,4 @@ import 'package:source_gen/source_gen.dart';
 import 'generator.dart';
 
 Builder jsonBuilder(BuilderOptions options) =>
-    SharedPartBuilder([JsonSerializableGenerator()], 'multiply');
+    SharedPartBuilder([SerdesJsonGenerator()], 'multiply');

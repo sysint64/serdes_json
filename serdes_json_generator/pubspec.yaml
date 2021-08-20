@@ -18,9 +18,10 @@ dependencies:
   optional: ^6.0.0-nullsafety.0
   collection: ^1.15.0-nullsafety.4
   serdes_json:
-    git:
-      url: https://github.com/sysint64/serdes_json.git
-      path: serdes_json
+    path: ../serdes_json
+    # git:
+      # url: https://github.com/sysint64/serdes_json.git
+      # path: serdes_json
 
 dev_dependencies:
   flutter_test:

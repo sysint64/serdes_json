@@ -50,9 +50,7 @@ List<T> transformJsonListOfMap<T>(
   T mapper(it) {
     try {
       return transform(it as Map<String, dynamic>);
-    } on Exception catch (e, stacktrace) {
-      debugPrint(e.toString());
-      debugPrint(stacktrace.toString());
+    } on Exception catch (e, _) {
       throw SchemeConsistencyException(
         'Failed to transform value "$it";\ncause: $e',
       );
