@@ -49,16 +49,16 @@ T? transformJsonValueOrNull<T, R>(
   }
 }
 
-List<T> transformJsonListOfMap<T>(
+List<T> transformJsonListOfMap<T, R>(
   Map<String, dynamic> json,
   String key,
-  T Function(Map<String, dynamic>) transform,
+  T Function(R) transform,
 ) {
   final List<dynamic> list = getJsonValue(json, key);
 
   T mapper(it) {
     try {
-      return transform(it as Map<String, dynamic>);
+      return transform(it as R);
     } on Exception catch (e, _) {
       throw SchemeConsistencyException(
         'Failed to transform value "$it";\ncause: $e',
@@ -88,17 +88,17 @@ List<T> transformJsonListOfString<T>(
   return list.isEmpty ? [] : list.map(mapper).toList() as List<T>;
 }
 
-List<T>? transformJsonListOfMapOrNull<T>(
+List<T>? transformJsonListOfMapOrNull<T, R>(
   Map<String, dynamic> json,
   String key,
-  T Function(Map<String, dynamic>) transform,
+  T Function(R) transform,
 ) {
   if (json.containsKey(key) && json[key] != null) {
     final List<dynamic> list = getJsonValue(json, key);
 
     T mapper(it) {
       try {
-        return transform(it as Map<String, dynamic>);
+        return transform(it as R);
       } on Exception catch (e) {
         throw SchemeConsistencyException(
           'Failed to transform value "$it";\ncause: $e',

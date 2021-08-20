@@ -10,8 +10,8 @@ class Test {
   });
 
   Test.fromJson(Map<String, dynamic> json)
-      : v1 = transformJsonValue<User, Map<String, dynamic>>(json, 'v1', (Map<String, dynamic> data) => User.fromJson(data)),
-        v2 = transformJsonValueOrNull<Book, Map<String, dynamic>>(json, 'v2', (Map<String, dynamic> data) => Book.fromJson(data))
+      : v1 = transformJsonValue<User, Map<String, dynamic>>(json, 'v1', (Map<String, dynamic> it) => User.fromJson(it)),
+        v2 = transformJsonValueOrNull<Book, Map<String, dynamic>>(json, 'v2', (Map<String, dynamic> it) => Book.fromJson(it))
   {
   }
 

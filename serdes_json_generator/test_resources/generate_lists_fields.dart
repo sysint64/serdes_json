@@ -1,10 +1,14 @@
 class Test {
   final TestScheme? $scheme = null;
 
-  final int v1;
-  final int? v2;
-  final String v3;
-  final String? v4;
+  final List<int> v1;
+  final List<int?> v2;
+  final List<String>? v3;
+  final List<User> v4;
+  final List<User?> v5;
+  final List<User>? v6;
+  final List<List<Book>> v7;
+  final List<List<Book>> v8;
 
   Test({
     required this.v1,
@@ -14,10 +18,10 @@ class Test {
   });
 
   Test.fromJson(Map<String, dynamic> json)
-      : v1 = getJsonValue<int>(json, 'v1'),
-        v2 = getJsonValueOrNull<int>(json, 'v2'),
-        v3 = getJsonValue<String>(json, 'v3'),
-        v4 = getJsonValueOrNull<String>(json, 'v4')
+      : v1 = getJsonValue(json, 'v1'),
+        v2 = getJsonValueOrNull(json, 'v2'),
+        v3 = getJsonValue(json, 'v3'),
+        v4 = getJsonValueOrNull(json, 'v4')
   {
   }
 
