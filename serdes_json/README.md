@@ -8,6 +8,20 @@ and annotate with `@SerdesJson`. That's it!
 
 This package is used only as a data holder and validation unit. You can't add additional methods to a model, at least for now. If you need a more flexible library, you can use [https://github.com/google/json_serializable.dart](json_serializable).
 
+## Install
+
+To use serdes_json you need install serdes_json and serdes_json_generator:
+
+```yaml
+dependencies:
+  serdes_json: <version>
+```
+
+```yaml
+dev_dependencies:
+  serdes_json_generator: <version>
+```
+
 ## Examples
 
 ### Model with all required fields
