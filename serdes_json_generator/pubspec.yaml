@@ -1,6 +1,6 @@
 name: serdes_json_generator
 description: code generator for serdes_json
-version: 0.1.0+1
+version: 0.1.0
 homepage: https://github.com/sysint64/serdes_json
 
 environment:
