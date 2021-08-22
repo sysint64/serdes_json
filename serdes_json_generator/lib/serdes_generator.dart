@@ -160,13 +160,17 @@ class SerdesGenerator {
       return _jsonSchemeGetter(type, fieldName, json);
     } else if (type.name == 'List') {
       return _jsonListGetter(type, fieldName, json);
+    } else if (type.name == 'Map') {
+      return _jsonMapGetter(type, fieldName, json);
     } else {
-      throw UnsupportedError('Unsupported type: $typeName');
+      throw UnsupportedError('Unsupported type: $typeName for field: $fieldName');
     }
   }
 
-  String _fromJsonItemConstructor(FieldType type, String it) {
-    if (type.isPrimitive) {
+  String _fromJsonItemConstructor(FieldType type, String it, String fieldName) {
+    if (type.name == 'dynamic') {
+      return it;
+    } else if (type.isPrimitive) {
       return '$it as ${type.displayName}';
     } else if (type.generics.isEmpty) {
       if (type.isOptional) {
@@ -175,16 +179,55 @@ class SerdesGenerator {
         return '${type.name}.fromJson($it as Map<String, dynamic>)';
       }
     } else if (type.name == 'List') {
-      final subType = type.generics[0];
-      final itemConstructor = _fromJsonItemConstructor(subType, 'it');
+      if (type.generics.length != 1) {
+        throw UnsupportedError(
+            'Unsupported type: $type  for field: $fieldName, please specify generic type');
+      }
 
-      if (subType.isOptional) {
-        return '($it as Iterable<dynamic>).map((dynamic it) => it == null ? null : $itemConstructor).toList()';
+      final subType = type.generics[0];
+      final itemConstructor = _fromJsonItemConstructor(subType, 'it', fieldName);
+
+      if (subType.name == 'dynamic') {
+        return '($it as Iterable<dynamic>).toList()';
       } else {
-        return '($it as Iterable<dynamic>).map((dynamic it) => $itemConstructor).toList()';
+        if (subType.isOptional) {
+          return '($it as Iterable<dynamic>).map((dynamic it) => it == null ? null : $itemConstructor).toList()';
+        } else {
+          return '($it as Iterable<dynamic>).map((dynamic it) => $itemConstructor).toList()';
+        }
+      }
+    } else if (type.name == 'Map') {
+      if (type.generics.length != 2) {
+        throw UnsupportedError(
+            'Unsupported type: ${type.displayName} for field: $fieldName, please specify generic types');
+      }
+
+      final keyType = type.generics[0];
+      final valueType = type.generics[1];
+
+      if (keyType.name != 'String') {
+        throw UnsupportedError(
+            'Unsupported type: ${type.displayName} for field: $fieldName, only String type allowed as a Map key');
+      }
+
+      if (valueType.name == 'dynamic') {
+        return '$it as Map<String, dynamic>';
+      } else {
+        final itemConstructor = _fromJsonItemConstructor(valueType, 'value', fieldName);
+        final mapEntry = 'MapEntry<String, ${valueType.displayName}>';
+        final String map;
+
+        if (valueType.isOptional) {
+          map =
+              '(String key, dynamic value) => value == null ? $mapEntry(key, null) : $mapEntry(key, $itemConstructor)';
+        } else {
+          map = '(String key, dynamic value) => $mapEntry(key, $itemConstructor)';
+        }
+
+        return '($it as Map<String, dynamic>).map<String, ${valueType.displayName}>($map)';
       }
     } else {
-      throw UnsupportedError('Unsupported type: ${type.displayName}');
+      throw UnsupportedError('Unsupported type: ${type.displayName} for field: $fieldName');
     }
   }
 
@@ -207,36 +250,58 @@ class SerdesGenerator {
   }
 
   String _jsonListGetter(FieldType type, String fieldName, String json) {
-    final subType = type.generics[0];
-    final itemConstructor = _fromJsonItemConstructor(subType, 'it');
+    if (type.generics.length != 1) {
+      throw UnsupportedError(
+          'Unsupported type: $fieldName for field: $fieldName, please specify generic type');
+    }
 
-    if (type.isOptional) {
-      return 'transformJsonListOfMapOrNull<${subType.displayName}, dynamic>($json, \'$fieldName\', (dynamic it) => $itemConstructor)';
+    final subType = type.generics[0];
+    final itemConstructor = _fromJsonItemConstructor(subType, 'it', fieldName);
+
+    if (subType.name == 'dynamic') {
+      if (type.isOptional) {
+        return 'getJsonValueOrNull<List<dynamic>>($json, \'$fieldName\')';
+      } else {
+        return 'getJsonValue<List<dynamic>>($json, \'$fieldName\')';
+      }
     } else {
-      return 'transformJsonListOfMap<${subType.displayName}, dynamic>($json, \'$fieldName\', (dynamic it) => $itemConstructor)';
+      if (type.isOptional) {
+        return 'transformJsonListOfMapOrNull<${subType.displayName}, dynamic>($json, \'$fieldName\', (dynamic it) => $itemConstructor)';
+      } else {
+        return 'transformJsonListOfMap<${subType.displayName}, dynamic>($json, \'$fieldName\', (dynamic it) => $itemConstructor)';
+      }
     }
   }
 
-  String _toJsonItemConstructor(FieldType type, String it) {
-    if (type.isPrimitive) {
-      return it;
-    } else if (type.generics.isEmpty) {
-      if (type.isOptional) {
-        return '$it?.toJson()';
-      } else {
-        return '$it.toJson()';
-      }
-    } else if (type.name == 'List') {
-      final subType = type.generics[0];
-      final itemConstructor = _fromJsonItemConstructor(subType, 'it');
+  String _jsonMapGetter(FieldType type, String fieldName, String json) {
+    if (type.generics.length != 2) {
+      throw UnsupportedError(
+          'Unsupported type: ${type.displayName} for field: $fieldName, please specify generic types');
+    }
 
-      if (subType.isOptional) {
-        return '($it as Iterable<dynamic>).map((dynamic it) => it == null ? null : $itemConstructor).toList()';
-      } else {
-        return '($it as Iterable<dynamic>).map((dynamic it) => $itemConstructor).toList()';
-      }
+    final keyType = type.generics[0];
+    final valueType = type.generics[1];
+
+    if (keyType.name != 'String') {
+      throw UnsupportedError(
+          'Unsupported type: ${type.displayName} for field: $fieldName, only String type allowed as a Map key');
+    }
+
+    final itemConstructor = _fromJsonItemConstructor(valueType, 'value', fieldName);
+    final mapEntry = 'MapEntry<String, ${valueType.displayName}>';
+    final map = '$mapEntry(key, $itemConstructor)';
+
+    // if (valueType.isOptional) {
+    //   map = 'value == null ? $mapEntry(key, null) : $mapEntry(key, $itemConstructor)';
+    // } else {
+    //   map = '$mapEntry(key, $itemConstructor)';
+    // }
+
+    if (type.isOptional) {
+      return 'getJsonValueOrNull<Map<String, dynamic>>($json, \'$fieldName\')?.map<String, ${valueType.displayName}>((String key, dynamic value) => $map)';
     } else {
-      throw UnsupportedError('Unsupported type: ${type.displayName}');
+      final String map = '$mapEntry(key, $itemConstructor)';
+      return 'getJsonValue<Map<String, dynamic>>($json, \'$fieldName\').map<String, ${valueType.displayName}>((String key, dynamic value) => $map)';
     }
   }
 
@@ -250,13 +315,44 @@ class SerdesGenerator {
         return '$fieldName.toJson()';
       }
     } else if (type.name == 'List') {
+      if (type.generics.length != 1) {
+        throw UnsupportedError(
+            'Unsupported type: $fieldName for field: $fieldName, please specify generic type');
+      }
+
       final subType = type.generics[0];
       final itemConstructor = _jsonSetter(subType, 'it');
 
-      if (type.isOptional) {
-        return '$fieldName?.map((${subType.displayName} it) => $itemConstructor).toList()';
+      if (subType.name == 'dynamic') {
+        return fieldName;
+      } else if (type.isOptional) {
+        return '$fieldName?.map<dynamic>((${subType.displayName} it) => $itemConstructor).toList()';
       } else {
-        return '$fieldName.map((${subType.displayName} it) => $itemConstructor).toList()';
+        return '$fieldName.map<dynamic>((${subType.displayName} it) => $itemConstructor).toList()';
+      }
+    } else if (type.name == 'Map') {
+      if (type.generics.length != 2) {
+        throw UnsupportedError(
+            'Unsupported type: ${type.displayName} for field: $fieldName, please specify generic types');
+      }
+
+      final keyType = type.generics[0];
+      final valueType = type.generics[1];
+      final itemConstructor = _jsonSetter(valueType, 'value');
+
+      if (keyType.name != 'String') {
+        throw UnsupportedError(
+            'Unsupported type: ${type.displayName} for field: $fieldName, only String type allowed as a Map key');
+      }
+
+      final mapEntry = 'MapEntry<String, dynamic>';
+
+      if (valueType.name == 'dynamic') {
+        return fieldName;
+      } else if (type.isOptional) {
+        return '$fieldName?.map<String, dynamic>((String key, ${valueType.displayName} value) => $mapEntry(key, $itemConstructor))';
+      } else {
+        return '$fieldName.map<String, dynamic>((String key, ${valueType.displayName} value) => $mapEntry(key, $itemConstructor))';
       }
     } else {
       throw UnsupportedError('Unsupported type: ${type.name}');

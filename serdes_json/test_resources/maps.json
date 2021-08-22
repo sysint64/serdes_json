@@ -1,89 +1,83 @@
 {
-    "v1": [1, 2, 3, 4, 5],
-    "v2": [1, 2, null, 4, null, 5],
-    "v3": ["Hello", "World"],
-    "v4": [
-        {
+    "v1": {"0": 1, "1": 2, "2": 3, "3": 4, "4": 5},
+    "v2": {"0": 1, "1": 2, "2": null, "3": 4, "4": null, "5" :5},
+    "v3": {"0": "Hello", "1": "World"},
+    "v4": {
+        "0": {
             "name": "John",
             "age": 12
         },
-        {
+        "1": {
             "name": "Doe",
             "age": 18
         }
-    ],
-    "v5": [
-        {
+    },
+    "v5": {
+        "0": {
             "name": "John",
             "age": 12
         },
-        null
-    ],
-    "v6": [
-        {
+        "1": null
+    },
+    "v6": {
+        "0": {
             "name": "John",
             "age": 12
         },
-        {
+        "1": {
             "name": "Doe",
             "age": 18
         }
-    ],
-    "v7": [
-        [
-            {
+    },
+    "v7": {
+        "0": {
+            "0": {
                 "name": "Book 1",
                 "timestamp": 12345
             },
-            {
+            "1": {
                 "name": "Book 2",
                 "timestamp": 38748
             }
-        ],
-        [
-            {
+        },
+        "1": {
+            "0": {
                 "name": "Book 3",
                 "timestamp": 9192
             }
-        ]
-    ],
-    "v8": [
-        [
-            [
-                {
+        }
+    },
+    "v8": {
+        "0": {
+            "0": {
+                "0": {
                     "name": "Book 4",
                     "timestamp": 9393
                 },
-                {
+                "1": {
                     "name": "Book 5",
                     "timestamp": 10928374
                 }
-            ],
-            null,
-            [
-                {
+            },
+            "1": null,
+            "2": {
+                "0": {
                     "name": "Book 6",
                     "timestamp": 92838
                 },
-                null,
-                null
-            ]
-        ]
-    ],
-    "v9": [
-        {
-            "name": "Name",
-            "age": 12,
-            "book": {
-                "name": "Book",
-                "timestamp": 8383
+                "1": null,
+                "2": null
             }
-        },
-        {
+        }
+    },
+    "v9": {
+        "name": "Name",
+        "age": 12,
+        "book": {
             "name": "Book",
             "timestamp": 8383
         },
-        [
+        "list": [
             {
                 "name": "Name",
                 "age": 12,
@@ -97,22 +91,30 @@
                 "timestamp": 8383
             }
         ]
-    ],
+    },
     "v10": null,
     "v11": null,
     "v12": null,
-    "v13": [
-        {
-            "name": "Name",
-            "age": 12,
-            "book": {
+    "v13": {
+        "name": "Name",
+        "age": 12,
+        "book": {
+            "name": "Book",
+            "timestamp": 8383
+        },
+        "list": [
+            {
+                "name": "Name",
+                "age": 12,
+                "book": {
+                    "name": "Book",
+                    "timestamp": 8383
+                }
+            },
+            {
                 "name": "Book",
                 "timestamp": 8383
             }
-        },
-        {
-            "name": "Book",
-            "timestamp": 8383
-        }
-    ]
+        ]
+    }
 }

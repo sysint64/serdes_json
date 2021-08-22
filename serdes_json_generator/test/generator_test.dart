@@ -38,9 +38,35 @@ void main() {
       Field('v6', parseType('List<User>?')),
       Field('v7', parseType('List<List<Book>>')),
       Field('v8', parseType('List<List<List<Book?>?>>')),
+      Field('v9', parseType('List<dynamic>')),
+      Field('v10', parseType('List<String>?')),
+      Field('v11', parseType('List<UserScheme>?')),
+      Field('v12', parseType('List<dynamic>?')),
+      Field('v13', parseType('List<dynamic>?')),
     ];
-    final result = SerdesGenerator().generateClass('TestScheme', 'Test', schemeFields);
+    final result = SerdesGenerator().generateClass('TestListScheme', 'TestList', schemeFields);
     final file = File('test_resources/generate_lists_fields.dart');
+    expect(result, await file.readAsString());
+  });
+
+  test('generate class - maps', () async {
+    final schemeFields = <Field>[
+      Field('v1', parseType('Map<String, int>')),
+      Field('v2', parseType('Map<String, int?>')),
+      Field('v3', parseType('Map<String, String>?')),
+      Field('v4', parseType('Map<String, User>')),
+      Field('v5', parseType('Map<String, User?>')),
+      Field('v6', parseType('Map<String, User>?')),
+      Field('v7', parseType('Map<String, Map<String, Book>>')),
+      Field('v8', parseType('Map<String, Map<String, Map<String, Book?>?>>')),
+      Field('v9', parseType('Map<String, dynamic>')),
+      Field('v10', parseType('Map<String, String>?')),
+      Field('v11', parseType('Map<String, UserScheme>?')),
+      Field('v12', parseType('Map<String, dynamic>?')),
+      Field('v13', parseType('Map<String, dynamic>?')),
+    ];
+    final result = SerdesGenerator().generateClass('TestMapScheme', 'TestMap', schemeFields);
+    final file = File('test_resources/generate_maps_fields.dart');
     expect(result, await file.readAsString());
   });
 }
