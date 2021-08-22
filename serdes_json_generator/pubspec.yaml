@@ -1,7 +1,6 @@
 name: serdes_json_generator
-description: A simple json serializer and deserializer model generator
-version: 0.0.1-nullsafety.0
-author: Andrey Kabylin
+description: code generator for serdes_json
+version: 0.1.0+1
 homepage: https://github.com/sysint64/serdes_json
 
 environment:
@@ -13,15 +12,9 @@ dependencies:
   build: ^2.0.0
   source_gen: ^1.0.0
   equatable: ^2.0.0
-  recase: ^4.0.0-nullsafety.0
-  localized_string: ^0.2.0
-  optional: ^6.0.0-nullsafety.0
-  collection: ^1.15.0-nullsafety.4
-  serdes_json:
-    path: ../serdes_json
-    # git:
-      # url: https://github.com/sysint64/serdes_json.git
-      # path: serdes_json
+  recase: ^4.0.0
+  collection: ^1.15.0
+  serdes_json: ^0.1.0+1
 
 dev_dependencies:
   flutter_test:

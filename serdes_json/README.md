@@ -1,12 +1,12 @@
 # serdes_json
 
-serdes_json - is a simple and clean serializer and deserializer.
+serdes_json - is a simple and clean json serializer and deserializer.
 To create serializable model just describe your model, add `Scheme` suffix to the end of class name,
 and annotate with `@SerdesJson`. That's it!
 
 ### NOTE
 
-This package is used only as a data holder and validation unit. You can't add additional methods to a model, at least for now. If you need a more flexible library, you can use [https://github.com/google/json_serializable.dart](json_serializable).
+This package is used only as a data holder and validation unit. You can't add additional methods to a model, at least for now. If you need a more flexible library, you can use [json_serializable](https://github.com/google/json_serializable.dart).
 
 ## Install
 
@@ -20,6 +20,12 @@ dependencies:
 ```yaml
 dev_dependencies:
   serdes_json_generator: <version>
+```
+
+## Generate models
+
+```sh
+flutter packages pub run build_runner build
 ```
 
 ## Examples
