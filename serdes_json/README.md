@@ -67,6 +67,21 @@ class NewsItemScheme {
 }
 ```
 
+### Rename field
+
+You can manually specify names for field:
+
+```dart
+@SerdesJson()
+class PayloadScheme {
+  late int id;
+  late String title;
+  late String description;
+  @SerdesJsonField(name: 'comments_count')
+  late int commentsCount;
+}
+```
+
 ### Use custom suffix
 
 ```dart

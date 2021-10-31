@@ -1,6 +1,6 @@
 name: serdes_json
 description: Simple and clean json serializer and deserializer.
-version: 0.1.0+1
+version: 0.2.0
 homepage: https://github.com/sysint64/serdes_json
 
 environment:

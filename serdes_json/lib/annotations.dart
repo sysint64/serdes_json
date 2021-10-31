@@ -17,3 +17,9 @@ class SerdesJson {
     this.endsWith = 'Scheme',
   });
 }
+
+class SerdesJsonField {
+  final String? name;
+
+  const SerdesJsonField({this.name});
+}

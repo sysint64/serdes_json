@@ -14,7 +14,7 @@ dependencies:
   equatable: ^2.0.0
   recase: ^4.0.0
   collection: ^1.15.0
-  serdes_json: ^0.1.0+1
+  serdes_json: ^0.2.0
 
 dev_dependencies:
   flutter_test:

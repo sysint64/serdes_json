@@ -2,9 +2,10 @@ import 'package:equatable/equatable.dart';
 
 class Field {
   final String name;
+  final String jsonName;
   final FieldType type;
 
-  Field(this.name, this.type);
+  const Field(this.name, this.jsonName, this.type);
 }
 
 // ignore: must_be_immutable

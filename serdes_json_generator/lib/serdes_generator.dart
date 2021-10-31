@@ -1,15 +1,12 @@
 import 'models.dart';
-import 'package:recase/recase.dart';
 
 class SerdesGenerator {
-  final bool shouldConvertToSnakeCase;
   final bool shouldGenerateToJson;
   final bool shouldGenerateFromJson;
   final bool shouldGenerateToStringJson;
   final bool shoudlGenerateFromStringJson;
 
   SerdesGenerator({
-    this.shouldConvertToSnakeCase = false,
     this.shouldGenerateToJson = true,
     this.shouldGenerateFromJson = true,
     this.shouldGenerateToStringJson = true,
@@ -93,7 +90,7 @@ class SerdesGenerator {
     final margin = ' ' * 8;
 
     for (final field in fields) {
-      result.writeln('${field.name} = ' + _jsonGetter(field.type, field.name, 'json') + ',');
+      result.writeln('${field.name} = ' + _jsonGetter(field.type, field.jsonName, 'json') + ',');
       result.write(margin);
     }
 
@@ -124,16 +121,8 @@ class SerdesGenerator {
     result.writeln();
 
     for (final field in fields) {
-      final String jsonFieldName;
-
-      if (shouldConvertToSnakeCase) {
-        jsonFieldName = field.name.snakeCase;
-      } else {
-        jsonFieldName = field.name;
-      }
-
       final writer = _jsonSetter(field.type, field.name);
-      result.writeln('    \$result[\'$jsonFieldName\'] = $writer;');
+      result.writeln('    \$result[\'${field.jsonName}\'] = $writer;');
     }
 
     result.writeln();
@@ -149,10 +138,6 @@ class SerdesGenerator {
 
   String _jsonGetter(FieldType type, String fieldName, String json) {
     final typeName = type.displayName;
-
-    if (shouldConvertToSnakeCase) {
-      fieldName = fieldName.snakeCase;
-    }
 
     if (type.isPrimitive) {
       return _jsonPrimitiveGetter(type, fieldName, json);

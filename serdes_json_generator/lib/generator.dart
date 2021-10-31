@@ -1,11 +1,14 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
+import 'package:recase/recase.dart';
 import 'package:serdes_json/serdes_json.dart';
 import 'package:serdes_json_generator/parser.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'models.dart';
 import 'serdes_generator.dart';
+
+final _jsonFieldChecker = const TypeChecker.fromRuntime(SerdesJsonField);
 
 class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
   @override
@@ -44,14 +47,26 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
     }
 
     final fields = classElement.fields.map(
-      (field) => Field(
-        field.name,
-        parseType(field.type.toString()),
-      ),
+      (field) {
+        final type = parseType(field.type.toString());
+
+        if (_jsonFieldChecker.hasAnnotationOfExact(field)) {
+          final jsonName =
+              _jsonFieldChecker.firstAnnotationOfExact(field)?.getField('name')?.toStringValue() ??
+                  field.name;
+
+          return Field(field.name, jsonName, type);
+        } else {
+          if (convertToSnakeCase) {
+            return Field(field.name, field.name.snakeCase, type);
+          } else {
+            return Field(field.name, field.name, type);
+          }
+        }
+      },
     );
 
     return SerdesGenerator(
-      shouldConvertToSnakeCase: convertToSnakeCase,
       shouldGenerateToJson: generateToJson,
       shouldGenerateFromJson: generateFromJson,
       shouldGenerateToStringJson: generateToStringJson,
