@@ -4,7 +4,7 @@ serdes_json - is a simple and clean json serializer and deserializer.
 To create serializable model just describe your model, add `Scheme` suffix to the end of class name,
 and annotate with `@SerdesJson`. That's it!
 
-- Package: <https://pub.dev/packages/serdes_Json>
+- Package: <https://pub.dev/packages/serdes_json>
 - [Source code](serdes_json)
 
 ## serdes_json_generator [![Pub Package](https://img.shields.io/pub/v/serdes_json_generator.svg)](https://pub.dev/packages/serdes_json_generator)
