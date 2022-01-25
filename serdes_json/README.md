@@ -41,6 +41,12 @@ part 'schemes.g.dart';
 class NewsListScheme {
   late List<NewsItemScheme> news;
 }
+
+// You can define private schemes.
+@SerdesJson()
+class _UserScheme {
+  late String name;
+}
 ```
 
 ```dart

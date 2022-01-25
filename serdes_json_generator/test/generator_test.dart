@@ -81,4 +81,16 @@ void main() {
     final file = File('test_resources/generate_rename_fields.dart');
     expect(result, await file.readAsString());
   });
+
+  test('genrate class - private scheme', () async {
+    final primitivesFields = <Field>[
+      Field('v1', 'v1', parseType('int')),
+      Field('v2', 'v2', parseType('int?')),
+      Field('v3', 'v3', parseType('String')),
+      Field('v4', 'v4', parseType('String?')),
+    ];
+    final result = SerdesGenerator().generateClass('_TestScheme', '_Test', primitivesFields);
+    final file = File('test_resources/generate_private_scheme.dart');
+    expect(result, await file.readAsString());
+  });
 }

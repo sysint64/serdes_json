@@ -16,6 +16,10 @@ class SerdesGenerator {
   String generateClass(String originalClassName, String name, Iterable<Field> fields) {
     final result = StringBuffer();
 
+    if (name.startsWith('_')) {
+      name = name.substring(1);
+    }
+
     result.writeln('class $name {');
     result.writeln('  final $originalClassName? \$scheme = null;');
     result.writeln();

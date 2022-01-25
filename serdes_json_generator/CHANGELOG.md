@@ -1,3 +1,7 @@
+## 0.3.0
+
+* Make it possible to define private schemes.
+
 ## 0.2.0
 
 * Make `dynamic` primitive;
