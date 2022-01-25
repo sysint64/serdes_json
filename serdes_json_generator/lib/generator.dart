@@ -48,13 +48,7 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
 
     final fields = classElement.fields.map(
       (field) {
-        var typeName = field.type.toString();
-
-        if (typeName.startsWith('_') && typeName.endsWith(endsWith)) {
-          typeName = typeName.substring(1);
-        }
-
-        final type = parseType(typeName);
+        final type = parseType(field.type.toString());
 
         if (_jsonFieldChecker.hasAnnotationOfExact(field)) {
           final jsonName =

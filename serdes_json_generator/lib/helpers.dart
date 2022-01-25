@@ -1,4 +1,8 @@
 String removeSchemeSuffix(String type) {
+  if (type.startsWith('_') && type.endsWith('Scheme')) {
+    type = type.substring(1);
+  }
+
   if (type.endsWith('Scheme')) {
     return type.substring(0, type.length - 'Scheme'.length);
   } else {

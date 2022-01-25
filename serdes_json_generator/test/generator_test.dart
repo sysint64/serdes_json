@@ -20,8 +20,18 @@ void main() {
 
   test('generate class - schemes', () async {
     final schemeFields = <Field>[
-      Field('v1', 'v1', parseType('User')),
-      Field('v2', 'v2', parseType('Book?')),
+      Field('v1', 'v1', parseType('UserScheme')),
+      Field('v2', 'v2', parseType('BookScheme?')),
+    ];
+    final result = SerdesGenerator().generateClass('TestScheme', 'Test', schemeFields);
+    final file = File('test_resources/generate_schemes_fields.dart');
+    expect(result, await file.readAsString());
+  });
+
+  test('generate class - privete schemes', () async {
+    final schemeFields = <Field>[
+      Field('v1', 'v1', parseType('_UserScheme')),
+      Field('v2', 'v2', parseType('_BookScheme?')),
     ];
     final result = SerdesGenerator().generateClass('TestScheme', 'Test', schemeFields);
     final file = File('test_resources/generate_schemes_fields.dart');
@@ -38,6 +48,27 @@ void main() {
       Field('v6', 'v6', parseType('List<User>?')),
       Field('v7', 'v7', parseType('List<List<Book>>')),
       Field('v8', 'v8', parseType('List<List<List<Book?>?>>')),
+      Field('v9', 'v9', parseType('List<dynamic>')),
+      Field('v10', 'v10', parseType('List<String>?')),
+      Field('v11', 'v11', parseType('List<UserScheme>?')),
+      Field('v12', 'v12', parseType('List<dynamic>?')),
+      Field('v13', 'v13', parseType('List<dynamic>?')),
+    ];
+    final result = SerdesGenerator().generateClass('TestListScheme', 'TestList', schemeFields);
+    final file = File('test_resources/generate_lists_fields.dart');
+    expect(result, await file.readAsString());
+  });
+
+  test('generate class - lists with private schemes', () async {
+    final schemeFields = <Field>[
+      Field('v1', 'v1', parseType('List<int>')),
+      Field('v2', 'v2', parseType('List<int?>')),
+      Field('v3', 'v3', parseType('List<String>?')),
+      Field('v4', 'v4', parseType('List<User>')),
+      Field('v5', 'v5', parseType('List<User?>')),
+      Field('v6', 'v6', parseType('List<User>?')),
+      Field('v7', 'v7', parseType('List<List<_BookScheme>>')),
+      Field('v8', 'v8', parseType('List<List<List<_BookScheme?>?>>')),
       Field('v9', 'v9', parseType('List<dynamic>')),
       Field('v10', 'v10', parseType('List<String>?')),
       Field('v11', 'v11', parseType('List<UserScheme>?')),
