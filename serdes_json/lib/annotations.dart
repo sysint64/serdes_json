@@ -20,6 +20,19 @@ class SerdesJson {
 
 class SerdesJsonField {
   final String? name;
+  final String? union;
+  final List<SerdesJsonUnion>? unionValues;
 
-  const SerdesJsonField({this.name});
+  const SerdesJsonField({
+    this.name,
+    this.union,
+    this.unionValues,
+  });
+}
+
+class SerdesJsonUnion {
+  final String value;
+  final Type type;
+
+  const SerdesJsonUnion(this.value, this.type);
 }

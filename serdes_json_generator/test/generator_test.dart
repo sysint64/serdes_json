@@ -124,4 +124,23 @@ void main() {
     final file = File('test_resources/generate_private_scheme.dart');
     expect(result, await file.readAsString());
   });
+
+  test('genrate class - union', () async {
+    final fields = <Field>[
+      Field('type', 'type', parseType('String')),
+      UnionField(
+        'content',
+        'content',
+        parseType('UnionContent'),
+        'type',
+        [
+          FieldUnionData('header', parseType('HeaderScheme')),
+          FieldUnionData('footer', parseType('FooterScheme')),
+        ],
+      ),
+    ];
+    final result = SerdesGenerator().generateClass('_UnionScheme', '_Union', fields);
+    final file = File('test_resources/generate_union_scheme.dart');
+    expect(result, await file.readAsString());
+  });
 }

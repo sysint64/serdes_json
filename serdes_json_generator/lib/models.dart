@@ -8,6 +8,26 @@ class Field {
   const Field(this.name, this.jsonName, this.type);
 }
 
+class UnionField extends Field {
+  final String union;
+  final Iterable<FieldUnionData> unionValues;
+
+  UnionField(
+    String name,
+    String jsonName,
+    FieldType type,
+    this.union,
+    this.unionValues,
+  ) : super(name, jsonName, type);
+}
+
+class FieldUnionData {
+  final String? value;
+  final FieldType type;
+
+  FieldUnionData(this.value, this.type);
+}
+
 // ignore: must_be_immutable
 class FieldType extends Equatable {
   FieldType? parent;

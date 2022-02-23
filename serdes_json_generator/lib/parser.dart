@@ -73,6 +73,10 @@ FieldType _parsePrimitive(TokenStream stream) {
   bool optional = false;
   String sufix = '';
 
+  if (stream.head().data == '*') {
+    stream.nextToken();
+  }
+
   if (stream.head().data == '?') {
     optional = true;
     sufix = '?';
@@ -98,6 +102,10 @@ FieldType _parseNonPrimitive(TokenStream stream) {
     bool optional = false;
     String sufix = '';
 
+    if (stream.head().data == '*') {
+      stream.nextToken();
+    }
+
     if (stream.head().data == '?') {
       optional = true;
       sufix = '?';
@@ -114,6 +122,10 @@ FieldType _parseNonPrimitive(TokenStream stream) {
   } else {
     bool optional = false;
     String sufix = '';
+
+    if (stream.head().data == '*') {
+      stream.nextToken();
+    }
 
     if (stream.head().data == '?') {
       optional = true;

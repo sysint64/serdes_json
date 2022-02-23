@@ -51,11 +51,20 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
         final type = parseType(field.type.toString());
 
         if (_jsonFieldChecker.hasAnnotationOfExact(field)) {
-          final jsonName =
-              _jsonFieldChecker.firstAnnotationOfExact(field)?.getField('name')?.toStringValue() ??
-                  field.name;
+          final annotation = _jsonFieldChecker.firstAnnotationOfExact(field);
+          final jsonName = annotation?.getField('name')?.toStringValue() ?? field.name;
+          final unionName = annotation?.getField('union')?.toStringValue();
+          final unionValues = annotation?.getField('unionValues')?.toListValue()?.map((it) {
+            final value = it.getField('value')?.toStringValue();
+            final type = it.getField('type')!.toTypeValue().toString();
+            return FieldUnionData(value, parseType(type));
+          }).toList();
 
-          return Field(field.name, jsonName, type);
+          if (unionName != null && unionValues != null) {
+            return UnionField(field.name, jsonName, type, unionName, unionValues);
+          } else {
+            return Field(field.name, jsonName, type);
+          }
         } else {
           if (convertToSnakeCase) {
             return Field(field.name, field.name.snakeCase, type);
@@ -71,6 +80,11 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
       shouldGenerateFromJson: generateFromJson,
       shouldGenerateToStringJson: generateToStringJson,
       shoudlGenerateFromStringJson: generateFromStringJson,
-    ).generateClass(classElement.name, name, fields);
+    ).generateClass(
+      classElement.name,
+      name,
+      fields,
+      classElement.interfaces.map((e) => parseType(e.toString())),
+    );
   }
 }

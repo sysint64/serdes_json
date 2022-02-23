@@ -1,3 +1,5 @@
+import 'package:serdes_json_generator/parser.dart';
+
 import 'models.dart';
 
 class SerdesGenerator {
@@ -13,20 +15,32 @@ class SerdesGenerator {
     this.shoudlGenerateFromStringJson = true,
   });
 
-  String generateClass(String originalClassName, String name, Iterable<Field> fields) {
+  String generateClass(
+    String originalClassName,
+    String name,
+    Iterable<Field> fields, [
+    Iterable<FieldType> interfaces = const [],
+  ]) {
     final result = StringBuffer();
 
     if (name.startsWith('_')) {
       name = name.substring(1);
     }
 
-    result.writeln('class $name {');
+    if (interfaces.isNotEmpty) {
+      final implements = interfaces.map((it) => it.displayName).join(', ');
+      result.writeln('class $name implements $implements {');
+    } else {
+      result.writeln('class $name {');
+    }
+
     result.writeln('  final $originalClassName? \$scheme = null;');
     result.writeln();
 
     result.write(generateClassFields(fields));
     result.writeln();
     result.write(generateConstructor(name, fields));
+    result.write(generateUnions(fields));
 
     if (shouldGenerateFromJson) {
       result.writeln();
@@ -85,6 +99,54 @@ class SerdesGenerator {
     return result.toString();
   }
 
+  String generateUnions(Iterable<Field> fields) {
+    final result = StringBuffer();
+    final unionFields = fields.whereType<UnionField>();
+
+    for (final field in unionFields) {
+      result.writeln();
+      final targetFields = fields.where((it) => it.jsonName == field.union);
+
+      if (targetFields.isEmpty) {
+        throw StateError(
+            'Couldn\'t find union field in shceme "${field.union}" for "${field.jsonName}" field');
+      }
+
+      final targetField = targetFields.first;
+
+      result.writeln(
+        '  static ${field.type.displayName} _\$createUnion\$${field.name}(Map<String, dynamic> json) {',
+      );
+      result.writeln(
+        '    final union = ' +
+            _jsonGetter(targetField.type, targetField.jsonName, 'json') +
+            '.toString();',
+      );
+      result.writeln('    final content = ' +
+          _jsonGetter(parseType('Map<String, dynamic>'), field.jsonName, 'json') +
+          ';');
+      result.writeln();
+      result.write('    ');
+
+      for (final value in field.unionValues) {
+        result.writeln('if (union == \'${value.value}\') {');
+        result.writeln('      return ${value.type.displayName}.fromJson(content);');
+        result.write('    } else ');
+      }
+
+      result.writeln('{');
+      final supportedTypes = field.unionValues.map((it) => it.value).join(',');
+      result.writeln(
+        '      throw SchemeConsistencyException(\'Unsupported "${field.union}" value: \$union. Supported values: $supportedTypes\');',
+      );
+      result.writeln('    }');
+
+      result.writeln('  }');
+    }
+
+    return result.toString();
+  }
+
   String generateFromJson(String name, Iterable<Field> fields) {
     final result = StringBuffer();
 
@@ -94,8 +156,13 @@ class SerdesGenerator {
     final margin = ' ' * 8;
 
     for (final field in fields) {
-      result.writeln('${field.name} = ' + _jsonGetter(field.type, field.jsonName, 'json') + ',');
-      result.write(margin);
+      if (field is UnionField) {
+        result.writeln('${field.name} = _\$createUnion\$${field.name}(json),');
+        result.write(margin);
+      } else {
+        result.writeln('${field.name} = ' + _jsonGetter(field.type, field.jsonName, 'json') + ',');
+        result.write(margin);
+      }
     }
 
     // Remove last margin and last comma
