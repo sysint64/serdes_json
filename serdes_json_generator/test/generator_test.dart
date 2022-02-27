@@ -143,4 +143,34 @@ void main() {
     final file = File('test_resources/generate_union_scheme.dart');
     expect(result, await file.readAsString());
   });
+
+  test('genrate class - type adapters', () async {
+    final fields = <Field>[
+      TypeAdapterField(
+        'dateTime',
+        'dateTime',
+        parseType('DateTime'),
+        parseType('MyDateTimeTypeAdapter'),
+        parseType('String'),
+      ),
+      TypeAdapterField(
+        'article',
+        'article',
+        parseType('Article'),
+        parseType('ArticleTypeAdapter'),
+        parseType('Map<String, dynamic>'),
+      ),
+      TypeAdapterField(
+        'news',
+        'news',
+        parseType('List<NewsItem>'),
+        parseType('NewsListTypeAdapter'),
+        parseType('List<Map<String, dynamic>>'),
+      ),
+    ];
+    final result = SerdesGenerator().generateClass('_TestScheme', '_Test', fields);
+    print(result);
+    final file = File('test_resources/generate_type_adapter.dart');
+    expect(result, await file.readAsString());
+  });
 }

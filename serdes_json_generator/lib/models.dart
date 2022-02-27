@@ -8,6 +8,19 @@ class Field {
   const Field(this.name, this.jsonName, this.type);
 }
 
+class TypeAdapterField extends Field {
+  final FieldType adapterType;
+  final FieldType jsonContentType;
+
+  TypeAdapterField(
+    String name,
+    String jsonName,
+    FieldType type,
+    this.adapterType,
+    this.jsonContentType,
+  ) : super(name, jsonName, type);
+}
+
 class UnionField extends Field {
   final String union;
   final Iterable<FieldUnionData> unionValues;

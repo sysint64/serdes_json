@@ -41,6 +41,7 @@ class SerdesGenerator {
     result.writeln();
     result.write(generateConstructor(name, fields));
     result.write(generateUnions(fields));
+    result.write(generateTypeAdapters(fields));
 
     if (shouldGenerateFromJson) {
       result.writeln();
@@ -147,6 +148,29 @@ class SerdesGenerator {
     return result.toString();
   }
 
+  String generateTypeAdapters(Iterable<Field> fields) {
+    final result = StringBuffer();
+    final typeAdapterFields = fields.whereType<TypeAdapterField>();
+
+    for (final field in typeAdapterFields) {
+      result.writeln();
+      result.writeln(
+        '  static ${field.type.displayName} _\$createTypeAdapter\$${field.name}(Map<String, dynamic> json) {',
+      );
+
+      result.writeln(
+        '    final object = ' + _jsonGetter(field.jsonContentType, field.jsonName, 'json') + ';',
+      );
+      result.writeln(
+        '    return const ' + field.adapterType.displayName + '().fromJson(object);',
+      );
+
+      result.writeln('  }');
+    }
+
+    return result.toString();
+  }
+
   String generateFromJson(String name, Iterable<Field> fields) {
     final result = StringBuffer();
 
@@ -158,6 +182,9 @@ class SerdesGenerator {
     for (final field in fields) {
       if (field is UnionField) {
         result.writeln('${field.name} = _\$createUnion\$${field.name}(json),');
+        result.write(margin);
+      } else if (field is TypeAdapterField) {
+        result.writeln('${field.name} = _\$createTypeAdapter\$${field.name}(json),');
         result.write(margin);
       } else {
         result.writeln('${field.name} = ' + _jsonGetter(field.type, field.jsonName, 'json') + ',');
@@ -192,8 +219,14 @@ class SerdesGenerator {
     result.writeln();
 
     for (final field in fields) {
-      final writer = _jsonSetter(field.type, field.name);
-      result.writeln('    \$result[\'${field.jsonName}\'] = $writer;');
+      if (field is TypeAdapterField) {
+        result.writeln(
+          '    \$result[\'${field.jsonName}\'] = const ${field.adapterType.displayName}().toJson(${field.name});',
+        );
+      } else {
+        final writer = _jsonSetter(field.type, field.name);
+        result.writeln('    \$result[\'${field.jsonName}\'] = $writer;');
+      }
     }
 
     result.writeln();

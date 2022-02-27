@@ -1,3 +1,9 @@
+## NEXT
+
+* Added unions;
+* Added type adapters;
+* Added enums.
+
 ## 0.3.2
 
 * Fixed error with private schemes.

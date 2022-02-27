@@ -117,6 +117,14 @@ class PayloadScheme {
 
 WIP
 
+### Unions
+
+WIP
+
+### Type adapters
+
+WIP
+
 ### Custom validations
 
 WIP
