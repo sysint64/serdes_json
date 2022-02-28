@@ -169,8 +169,28 @@ void main() {
       ),
     ];
     final result = SerdesGenerator().generateClass('_TestScheme', '_Test', fields);
-    print(result);
     final file = File('test_resources/generate_type_adapter.dart');
+    expect(result, await file.readAsString());
+  });
+
+  test('genrate enum', () async {
+    final fields = <Field>[
+      EnumField('internalError', 'internal_error', parseType('String')),
+      EnumField('badRequest', '400', parseType('int')),
+    ];
+    final result = SerdesGenerator().generateEnum('TestEnum', fields);
+    final file = File('test_resources/generate_enum.dart');
+    expect(result, await file.readAsString());
+  });
+
+  test('generate class - scheme with enum fields', () async {
+    final fields = <Field>[
+      Field('enumValue', 'enum_value', parseType('TestEnum', isEnum: true)),
+      Field('nullableEnumValue', 'nullable_enum_value', parseType('TestEnum?', isEnum: true)),
+    ];
+    final result = SerdesGenerator().generateClass('TestScheme', 'Test', fields);
+    // print(result);
+    final file = File('test_resources/generate_scheme_with_enum_fields.dart');
     expect(result, await file.readAsString());
   });
 }

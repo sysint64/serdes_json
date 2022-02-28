@@ -14,6 +14,7 @@ import 'models.dart';
 import 'serdes_generator.dart';
 
 final _jsonFieldChecker = const TypeChecker.fromRuntime(SerdesJsonField);
+final _jsonEnumFieldChecker = const TypeChecker.fromRuntime(SerdesJsonEnumField);
 final _typeAdapterChecker = const TypeChecker.fromRuntime(SerdesJsonTypeAdapter);
 
 class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
@@ -32,6 +33,67 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
       );
     }
 
+    if (element.isEnum) {
+      return _generateEnum(element, annotation);
+    } else {
+      return _generateClass(element, annotation);
+    }
+  }
+
+  String _generateEnum(
+    ClassElement element,
+    ConstantReader annotation,
+  ) {
+    final convertToSnakeCase = annotation.read('convertToSnakeCase').literalValue as bool;
+    final generateToJson = annotation.read('toJson').literalValue as bool;
+    final generateFromJson = annotation.read('fromJson').literalValue as bool;
+
+    final dynamicType = parseType('dynamic');
+
+    final fields = element.fields.where((it) => it.isEnumConstant).map(
+      (field) {
+        final fieldName = convertToSnakeCase ? field.name.snakeCase : field.name;
+
+        if (_jsonEnumFieldChecker.hasAnnotationOfExact(field)) {
+          final annotation = _jsonEnumFieldChecker.firstAnnotationOfExact(field);
+          final value = annotation?.getField('value');
+
+          if (value == null) {
+            return Field(field.name, fieldName, dynamicType);
+          }
+
+          final valueType = parseType(value.type!.toString());
+          final String enumValue;
+
+          if (valueType.displayName == 'String') {
+            enumValue = value.toStringValue()!;
+          } else if (valueType.displayName == 'int') {
+            enumValue = value.toIntValue()!.toString();
+          } else if (valueType.displayName == 'double') {
+            enumValue = value.toDoubleValue()!.toString();
+          } else {
+            throw StateError(
+              'Unsupported enum value type: ${valueType.displayName}',
+            );
+          }
+
+          return EnumField(field.name, enumValue, valueType);
+        } else {
+          return EnumField(field.name, fieldName, parseType('String'));
+        }
+      },
+    );
+
+    return SerdesGenerator(
+      shouldGenerateToJson: generateToJson,
+      shouldGenerateFromJson: generateFromJson,
+    ).generateEnum(element.name, fields);
+  }
+
+  String _generateClass(
+    ClassElement element,
+    ConstantReader annotation,
+  ) {
     final classElement = element;
     final convertToSnakeCase = annotation.read('convertToSnakeCase').literalValue as bool;
     final generateToJson = annotation.read('toJson').literalValue as bool;
@@ -56,7 +118,7 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
 
     final fields = classElement.fields.map(
       (field) {
-        final type = parseType(field.type.toString());
+        final type = parseType(field.type.toString(), isEnum: field.type.isEnum);
         final fieldAdapters = _typeAdapterChecker
             .annotationsOf(field)
             .map((it) => _isTypeAdapterValid(field.type, it))
@@ -81,7 +143,8 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
 
         if (_jsonFieldChecker.hasAnnotationOfExact(field)) {
           final annotation = _jsonFieldChecker.firstAnnotationOfExact(field);
-          final jsonName = annotation?.getField('name')?.toStringValue() ?? field.name;
+          final fieldName = convertToSnakeCase ? field.name.snakeCase : field.name;
+          final jsonName = annotation?.getField('name')?.toStringValue() ?? fieldName;
           final unionName = annotation?.getField('union')?.toStringValue();
           final unionValues = annotation?.getField('unionValues')?.toListValue()?.map((it) {
             final value = it.getField('value')?.toStringValue();
@@ -92,14 +155,14 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
           if (unionName != null && unionValues != null) {
             return UnionField(field.name, jsonName, type, unionName, unionValues);
           } else {
-            return Field(field.name, convertToSnakeCase ? field.name.snakeCase : field.name, type);
+            return Field(field.name, jsonName, type);
           }
         } else if (typeAdapter != null) {
           return TypeAdapterField(
             field.name,
             convertToSnakeCase ? field.name.snakeCase : field.name,
             type,
-            typeAdapter.fieldType,
+            typeAdapter.adapterType,
             typeAdapter.jsonType,
           );
         } else {
@@ -123,11 +186,11 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
 }
 
 class _TypeAdapterMatch {
-  final FieldType fieldType;
+  final FieldType adapterType;
   final FieldType jsonType;
 
   _TypeAdapterMatch(
-    this.fieldType,
+    this.adapterType,
     this.jsonType,
   );
 }
@@ -150,58 +213,10 @@ _TypeAdapterMatch? _isTypeAdapterValid(DartType targetType, DartObject annotatio
 
   if (fieldType == targetType) {
     return _TypeAdapterMatch(
-      parseType(fieldType.toString()),
+      parseType(annotation.type!.toString()),
       parseType(jsonAdapterSuper.typeArguments[1].toString()),
     );
   }
 
   return null;
-  // return fieldType == targetType;
 }
-
-// _TypeAdapterMatch? _compatibleMatch(
-//   DartType targetType,
-//   ElementAnnotation annotation,
-// ) {
-//   final constantValue = annotation.computeConstantValue()!;
-//   final converterClassElement = constantValue.type!.element as ClassElement;
-
-//   final jsonAdapterSuper = converterClassElement.allSupertypes.singleWhereOrNull(
-//     (e) => _typeAdapterChecker.isExactly(e.element),
-//   );
-
-//   if (jsonAdapterSuper == null) {
-//     return null;
-//   }
-
-//   assert(jsonAdapterSuper.element.typeParameters.length == 2);
-//   assert(jsonAdapterSuper.typeArguments.length == 2);
-
-//   final fieldType = jsonAdapterSuper.typeArguments[0];
-
-//   if (fieldType == targetType) {
-//     return _TypeAdapterMatch(annotation, constantValue, jsonAdapterSuper.typeArguments[1], null);
-//   }
-
-//   // if (fieldType is TypeParameterType && targetType is TypeParameterType) {
-//   //   assert(annotation.element is! PropertyAccessorElement);
-//   //   assert(converterClassElement.typeParameters.isNotEmpty);
-//   //   if (converterClassElement.typeParameters.length > 1) {
-//   //     throw InvalidGenerationSourceError(
-//   //       '`$SerdesJsonTypeAdapter` implementations can have no more than one type '
-//   //       'argument. `${converterClassElement.name}` has '
-//   //       '${converterClassElement.typeParameters.length}.',
-//   //       element: converterClassElement,
-//   //     );
-//   //   }
-
-//   //   return _ConverterMatch(
-//   //     annotation,
-//   //     constantValue,
-//   //     jsonAdapterSuper.typeArguments[1],
-//   //     '${targetType.element.name}${targetType.isNullableType ? '?' : ''}',
-//   //   );
-//   // }
-
-//   return null;
-// }

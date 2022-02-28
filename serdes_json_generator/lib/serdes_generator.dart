@@ -15,6 +15,105 @@ class SerdesGenerator {
     this.shoudlGenerateFromStringJson = true,
   });
 
+  String generateEnum(
+    String enumName,
+    Iterable<Field> fields,
+  ) {
+    final result = StringBuffer();
+    final enumFields = fields.whereType<EnumField>();
+    final supportedValues = enumFields.map((it) {
+      if (it.valueType.displayName == 'String') {
+        return '\\\'${it.value}\\\'';
+      } else {
+        return it.value;
+      }
+    }).join(',');
+
+    result.writeln('abstract class _\$SerdesJson_${enumName}TypeAdapter {');
+
+    if (shouldGenerateFromJson) {
+      result.writeln('  static $enumName fromJson(String fieldName, dynamic json) {');
+      result.writeln('    final value = fromJsonNullable(fieldName, json);');
+      result.writeln('    if (value == null) {');
+      result.writeln(
+        '      throw SchemeConsistencyException(\'field: "\$fieldName" can\\\'t be null\');',
+      );
+      result.writeln('    } else {');
+      result.writeln('      return value;');
+      result.writeln('    }');
+      result.writeln('  }');
+      result.writeln();
+
+      ///
+      result.writeln('  static $enumName? fromJsonNullable(String fieldName, dynamic json) {');
+      result.writeln('    if (json == null) {');
+      result.writeln('      return null;');
+      result.writeln('    }');
+      result.write('    ');
+
+      for (final field in enumFields) {
+        if (field.valueType.displayName == 'String') {
+          result.writeln('if (json == \'${field.value}\') {');
+        } else {
+          result.writeln('if (json == ${field.value}) {');
+        }
+
+        result.writeln('      return $enumName.${field.name};');
+        result.write('    } else ');
+      }
+
+      result.writeln('{');
+      result.writeln(
+        '      throw SchemeConsistencyException(\'Unsupported "$enumName" value: \$json for field "\$fieldName". Supported values: $supportedValues\');',
+      );
+      result.writeln('    }');
+
+      result.writeln('  }');
+
+      if (shouldGenerateToJson) {
+        result.writeln();
+      }
+    }
+
+    if (shouldGenerateToJson) {
+      result.writeln('  static dynamic toJson(String fieldName, $enumName object) {');
+      result.writeln('    final value = toJsonNullable(object);');
+      result.writeln('    if (value == null) {');
+      result.writeln(
+        '      throw SchemeConsistencyException(\'field: "\$fieldName" can\\\'t be null\');',
+      );
+      result.writeln('    } else {');
+      result.writeln('      return value;');
+      result.writeln('    }');
+      result.writeln('  }');
+      result.writeln();
+
+      ///
+      result.writeln('  static dynamic toJsonNullable($enumName? object) {');
+      result.writeln('    if (object == null) {');
+      result.writeln('      return null;');
+      result.writeln('    }');
+      result.writeln('    switch (object) {');
+
+      for (final field in fields.whereType<EnumField>()) {
+        result.writeln('      case $enumName.${field.name}:');
+
+        if (field.valueType.displayName == 'String') {
+          result.writeln('        return \'${field.value}\';');
+        } else {
+          result.writeln('        return ${field.value};');
+        }
+      }
+
+      result.writeln('    }');
+      result.writeln('  }');
+    }
+
+    result.writeln('}');
+
+    return result.toString();
+  }
+
   String generateClass(
     String originalClassName,
     String name,
@@ -224,7 +323,7 @@ class SerdesGenerator {
           '    \$result[\'${field.jsonName}\'] = const ${field.adapterType.displayName}().toJson(${field.name});',
         );
       } else {
-        final writer = _jsonSetter(field.type, field.name);
+        final writer = _jsonSetter(field.type, field.name, field.jsonName);
         result.writeln('    \$result[\'${field.jsonName}\'] = $writer;');
       }
     }
@@ -243,7 +342,14 @@ class SerdesGenerator {
   String _jsonGetter(FieldType type, String fieldName, String json) {
     final typeName = type.displayName;
 
-    if (type.isPrimitive) {
+    if (type.isEnum) {
+      final getter = _jsonPrimitiveGetter(parseType('dynamic'), fieldName, json);
+      if (type.isOptional) {
+        return '_\$SerdesJson_${type.name}TypeAdapter.fromJsonNullable(\'$fieldName\', $getter)';
+      } else {
+        return '_\$SerdesJson_${type.name}TypeAdapter.fromJson(\'$fieldName\', $getter)';
+      }
+    } else if (type.isPrimitive) {
       return _jsonPrimitiveGetter(type, fieldName, json);
     } else if (type.generics.isEmpty) {
       return _jsonSchemeGetter(type, fieldName, json);
@@ -394,8 +500,14 @@ class SerdesGenerator {
     }
   }
 
-  String _jsonSetter(FieldType type, String fieldName) {
-    if (type.isPrimitive) {
+  String _jsonSetter(FieldType type, String fieldName, [String? jsonName]) {
+    if (type.isEnum) {
+      if (type.isOptional) {
+        return '_\$SerdesJson_${type.name}TypeAdapter.toJsonNullable($fieldName)';
+      } else {
+        return '_\$SerdesJson_${type.name}TypeAdapter.toJson(\'${jsonName ?? fieldName}\', $fieldName)';
+      }
+    } else if (type.isPrimitive) {
       return fieldName;
     } else if (type.generics.isEmpty) {
       if (type.isOptional) {

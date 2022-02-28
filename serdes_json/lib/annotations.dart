@@ -30,9 +30,19 @@ class SerdesJsonField {
   });
 }
 
+class SerdesJsonEnumField {
+  final dynamic value;
+
+  const SerdesJsonEnumField({this.value});
+}
+
 class SerdesJsonUnion {
   final String value;
   final Type type;
 
   const SerdesJsonUnion(this.value, this.type);
+}
+
+abstract class SerdesJsonUnionContent {
+  Map<String, dynamic> toJson();
 }

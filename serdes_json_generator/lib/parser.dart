@@ -35,7 +35,7 @@ class ParseError extends Error {
   String toString() => '$ParseError: $message';
 }
 
-FieldType parseType(String type) {
+FieldType parseType(String type, {bool isEnum = false}) {
   final tokens = tokenize(StringStream(type));
   final stream = TokenStream(tokens);
 
@@ -49,7 +49,7 @@ FieldType parseType(String type) {
     throw ParseError('expected EOF but get ${stream.head()}');
   }
 
-  return parsedType;
+  return parsedType.withEnum(isEnum);
 }
 
 FieldType _parseType(TokenStream stream) {

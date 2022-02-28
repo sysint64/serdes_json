@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:serdes_json_generator/parser.dart';
 
 class Field {
   final String name;
@@ -6,6 +7,14 @@ class Field {
   final FieldType type;
 
   const Field(this.name, this.jsonName, this.type);
+}
+
+class EnumField extends Field {
+  final String value;
+  final FieldType valueType;
+
+  EnumField(String name, this.value, this.valueType)
+      : super(name, '', parseType('dynamic'));
 }
 
 class TypeAdapterField extends Field {
@@ -49,6 +58,7 @@ class FieldType extends Equatable {
   final bool isPrimitive;
   final String displayName;
   final bool isOptional;
+  final bool isEnum;
 
   FieldType({
     required this.name,
@@ -57,6 +67,7 @@ class FieldType extends Equatable {
     this.generics = const [],
     this.parent,
     this.isOptional = false,
+    this.isEnum = false,
   }) {
     for (final generic in generics) {
       generic.parent = this;
@@ -66,17 +77,15 @@ class FieldType extends Equatable {
   @override
   List<Object> get props => [name, generics, isPrimitive, isOptional, displayName];
 
-  FieldType copyWith({
-    String? name,
-    List<FieldType>? generics,
-    bool? isPrimitive,
-    String? displayName,
-  }) {
+  FieldType withEnum(bool newIsEnum) {
     return FieldType(
-      name: name ?? this.name,
-      generics: generics ?? this.generics,
-      isPrimitive: isPrimitive ?? this.isPrimitive,
-      displayName: displayName ?? this.displayName,
+      isEnum: newIsEnum,
+      name: name,
+      displayName: displayName,
+      isPrimitive: isPrimitive,
+      generics: generics,
+      parent: parent,
+      isOptional: isOptional,
     );
   }
 
