@@ -167,6 +167,20 @@ void main() {
         parseType('NewsListTypeAdapter'),
         parseType('List<Map<String, dynamic>>'),
       ),
+      TypeAdapterField(
+        'nullableArticle',
+        'nullableArticle',
+        parseType('Article?'),
+        parseType('ArticleTypeAdapter'),
+        parseType('Map<String, dynamic>?'),
+      ),
+      TypeAdapterField(
+        'nullableNews',
+        'nullableNews',
+        parseType('List<NewsItem>?'),
+        parseType('NewsListTypeAdapter'),
+        parseType('List<Map<String, dynamic>>?'),
+      ),
     ];
     final result = SerdesGenerator().generateClass('_TestScheme', '_Test', fields);
     final file = File('test_resources/generate_type_adapter.dart');

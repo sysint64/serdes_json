@@ -1,4 +1,4 @@
-abstract class _$SerdesJson_TestEnumTypeAdapter {
+abstract class $SerdesJson_TestEnumTypeAdapter {
   static TestEnum fromJson(String fieldName, dynamic json) {
     final value = fromJsonNullable(fieldName, json);
     if (value == null) {

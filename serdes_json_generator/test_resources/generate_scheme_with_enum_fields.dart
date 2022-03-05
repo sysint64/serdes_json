@@ -10,8 +10,8 @@ class Test {
   });
 
   Test.fromJson(Map<String, dynamic> json)
-      : enumValue = _$SerdesJson_TestEnumTypeAdapter.fromJson('enum_value', getJsonValue<dynamic>(json, 'enum_value')),
-        nullableEnumValue = _$SerdesJson_TestEnumTypeAdapter.fromJsonNullable('nullable_enum_value', getJsonValue<dynamic>(json, 'nullable_enum_value'))
+      : enumValue = $SerdesJson_TestEnumTypeAdapter.fromJson('enum_value', getJsonValue<dynamic>(json, 'enum_value')),
+        nullableEnumValue = $SerdesJson_TestEnumTypeAdapter.fromJsonNullable('nullable_enum_value', getJsonValue<dynamic>(json, 'nullable_enum_value'))
   {
   }
 
@@ -20,8 +20,8 @@ class Test {
   Map<String, dynamic> toJson() {
     final $result = <String, dynamic>{};
 
-    $result['enum_value'] = _$SerdesJson_TestEnumTypeAdapter.toJson('enum_value', enumValue);
-    $result['nullable_enum_value'] = _$SerdesJson_TestEnumTypeAdapter.toJsonNullable(nullableEnumValue);
+    $result['enum_value'] = $SerdesJson_TestEnumTypeAdapter.toJson('enum_value', enumValue);
+    $result['nullable_enum_value'] = $SerdesJson_TestEnumTypeAdapter.toJsonNullable(nullableEnumValue);
 
     return $result;
   }

@@ -29,7 +29,7 @@ class SerdesGenerator {
       }
     }).join(',');
 
-    result.writeln('abstract class _\$SerdesJson_${enumName}TypeAdapter {');
+    result.writeln('abstract class \$SerdesJson_${enumName}TypeAdapter {');
 
     if (shouldGenerateFromJson) {
       result.writeln('  static $enumName fromJson(String fieldName, dynamic json) {');
@@ -260,9 +260,18 @@ class SerdesGenerator {
       result.writeln(
         '    final object = ' + _jsonGetter(field.jsonContentType, field.jsonName, 'json') + ';',
       );
-      result.writeln(
-        '    return const ' + field.adapterType.displayName + '().fromJson(object);',
-      );
+
+      if (field.type.isOptional) {
+        result.writeln(
+          '    return object == null ? null : const ' +
+              field.adapterType.displayName +
+              '().fromJson(object);',
+        );
+      } else {
+        result.writeln(
+          '    return const ' + field.adapterType.displayName + '().fromJson(object);',
+        );
+      }
 
       result.writeln('  }');
     }
@@ -319,9 +328,15 @@ class SerdesGenerator {
 
     for (final field in fields) {
       if (field is TypeAdapterField) {
-        result.writeln(
-          '    \$result[\'${field.jsonName}\'] = const ${field.adapterType.displayName}().toJson(${field.name});',
-        );
+        if (field.type.isOptional) {
+          result.writeln(
+            '    \$result[\'${field.jsonName}\'] = ${field.name} == null ? null : const ${field.adapterType.displayName}().toJson(${field.name}!);',
+          );
+        } else {
+          result.writeln(
+            '    \$result[\'${field.jsonName}\'] = const ${field.adapterType.displayName}().toJson(${field.name});',
+          );
+        }
       } else {
         final writer = _jsonSetter(field.type, field.name, field.jsonName);
         result.writeln('    \$result[\'${field.jsonName}\'] = $writer;');
@@ -345,9 +360,9 @@ class SerdesGenerator {
     if (type.isEnum) {
       final getter = _jsonPrimitiveGetter(parseType('dynamic'), fieldName, json);
       if (type.isOptional) {
-        return '_\$SerdesJson_${type.name}TypeAdapter.fromJsonNullable(\'$fieldName\', $getter)';
+        return '\$SerdesJson_${type.name}TypeAdapter.fromJsonNullable(\'$fieldName\', $getter)';
       } else {
-        return '_\$SerdesJson_${type.name}TypeAdapter.fromJson(\'$fieldName\', $getter)';
+        return '\$SerdesJson_${type.name}TypeAdapter.fromJson(\'$fieldName\', $getter)';
       }
     } else if (type.isPrimitive) {
       return _jsonPrimitiveGetter(type, fieldName, json);
@@ -503,9 +518,9 @@ class SerdesGenerator {
   String _jsonSetter(FieldType type, String fieldName, [String? jsonName]) {
     if (type.isEnum) {
       if (type.isOptional) {
-        return '_\$SerdesJson_${type.name}TypeAdapter.toJsonNullable($fieldName)';
+        return '\$SerdesJson_${type.name}TypeAdapter.toJsonNullable($fieldName)';
       } else {
-        return '_\$SerdesJson_${type.name}TypeAdapter.toJson(\'${jsonName ?? fieldName}\', $fieldName)';
+        return '\$SerdesJson_${type.name}TypeAdapter.toJson(\'${jsonName ?? fieldName}\', $fieldName)';
       }
     } else if (type.isPrimitive) {
       return fieldName;

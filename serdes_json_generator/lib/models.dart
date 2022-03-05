@@ -13,8 +13,7 @@ class EnumField extends Field {
   final String value;
   final FieldType valueType;
 
-  EnumField(String name, this.value, this.valueType)
-      : super(name, '', parseType('dynamic'));
+  EnumField(String name, this.value, this.valueType) : super(name, '', parseType('dynamic'));
 }
 
 class TypeAdapterField extends Field {
@@ -75,7 +74,7 @@ class FieldType extends Equatable {
   }
 
   @override
-  List<Object> get props => [name, generics, isPrimitive, isOptional, displayName];
+  List<Object> get props => [name, generics, isPrimitive, isOptional, displayName, isEnum];
 
   FieldType withEnum(bool newIsEnum) {
     return FieldType(
@@ -86,6 +85,28 @@ class FieldType extends Equatable {
       generics: generics,
       parent: parent,
       isOptional: isOptional,
+    );
+  }
+
+  FieldType withOptional(bool newIsOptional) {
+    final String newDisplayName;
+
+    if (isOptional && !newIsOptional && displayName.endsWith('?')) {
+      newDisplayName = displayName.substring(0, displayName.length - 1);
+    } else if (!isOptional && newIsOptional && !displayName.endsWith('?')) {
+      newDisplayName = '$displayName?';
+    } else {
+      newDisplayName = displayName;
+    }
+
+    return FieldType(
+      isEnum: isEnum,
+      name: name,
+      displayName: newDisplayName,
+      isPrimitive: isPrimitive,
+      generics: generics,
+      parent: parent,
+      isOptional: newIsOptional,
     );
   }
 

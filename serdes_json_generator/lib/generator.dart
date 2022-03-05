@@ -121,14 +121,14 @@ class SerdesJsonGenerator extends GeneratorForAnnotation<SerdesJson> {
         final type = parseType(field.type.toString(), isEnum: field.type.isEnum);
         final fieldAdapters = _typeAdapterChecker
             .annotationsOf(field)
-            .map((it) => _isTypeAdapterValid(field.type, it))
+            .map((it) => _isTypeAdapterValid(parseType(field.type.toString()), it))
             .where((it) => it != null)
             .map((it) => it!);
 
         final adapters = [
           ...fieldAdapters,
           ...classLevelAdapters
-              .map((it) => _isTypeAdapterValid(field.type, it))
+              .map((it) => _isTypeAdapterValid(parseType(field.type.toString()), it))
               .where((it) => it != null)
               .map((it) => it!),
         ];
@@ -195,7 +195,7 @@ class _TypeAdapterMatch {
   );
 }
 
-_TypeAdapterMatch? _isTypeAdapterValid(DartType targetType, DartObject annotation) {
+_TypeAdapterMatch? _isTypeAdapterValid(FieldType targetType, DartObject annotation) {
   final converterClassElement = annotation.type!.element as ClassElement;
 
   final jsonAdapterSuper = converterClassElement.allSupertypes.singleWhereOrNull(
@@ -209,9 +209,14 @@ _TypeAdapterMatch? _isTypeAdapterValid(DartType targetType, DartObject annotatio
   assert(jsonAdapterSuper.element.typeParameters.length == 2);
   assert(jsonAdapterSuper.typeArguments.length == 2);
 
-  final fieldType = jsonAdapterSuper.typeArguments[0];
+  final fieldType = parseType(jsonAdapterSuper.typeArguments[0].toString());
 
-  if (fieldType == targetType) {
+  if (targetType.isOptional && fieldType == targetType.withOptional(false)) {
+    return _TypeAdapterMatch(
+      parseType(annotation.type!.toString()),
+      parseType(jsonAdapterSuper.typeArguments[1].toString()).withOptional(true),
+    );
+  } else if (fieldType == targetType) {
     return _TypeAdapterMatch(
       parseType(annotation.type!.toString()),
       parseType(jsonAdapterSuper.typeArguments[1].toString()),
