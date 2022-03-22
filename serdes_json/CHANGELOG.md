@@ -1,3 +1,9 @@
+## 0.3.0
+
+* Added `SerdesJsonTypeAdapter`;
+* Added `SerdesJsonEnumField` annotation;
+* Added `SerdesJsonUnion` annotation.
+
 ## 0.2.0
 
 * Make `dynamic` primitive;

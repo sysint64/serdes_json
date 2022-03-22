@@ -1,4 +1,4 @@
-## NEXT
+## 0.4.0
 
 * Added unions;
 * Added type adapters;
