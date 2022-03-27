@@ -235,10 +235,15 @@ class SerdesGenerator {
       }
 
       result.writeln('{');
-      final supportedTypes = field.unionValues.map((it) => it.value).join(',');
-      result.writeln(
-        '      throw SchemeConsistencyException(\'Unsupported "${field.union}" value: \$union. Supported values: $supportedTypes\');',
-      );
+
+      if (field.type.isOptional) {
+        result.writeln('      return null;');
+      } else {
+        final supportedTypes = field.unionValues.map((it) => it.value).join(',');
+        result.writeln(
+          '      throw SchemeConsistencyException(\'Unsupported "${field.union}" value: \$union. Supported values: $supportedTypes\');',
+        );
+      }
       result.writeln('    }');
 
       result.writeln('  }');

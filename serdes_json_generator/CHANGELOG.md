@@ -1,3 +1,7 @@
+## 0.4.1
+
+* Fixed generation optional type for union.
+
 ## 0.4.0
 
 * Added unions;
