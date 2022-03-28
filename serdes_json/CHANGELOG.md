@@ -1,3 +1,7 @@
+## 0.4.0
+
+* Fixed minor issues.
+
 ## 0.3.0
 
 * Added `SerdesJsonTypeAdapter`;

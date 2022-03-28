@@ -1,3 +1,7 @@
+## 0.4.2
+
+* Fixed optional issues.
+
 ## 0.4.1
 
 * Fixed generation optional type for union.

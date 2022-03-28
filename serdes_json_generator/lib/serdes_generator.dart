@@ -222,15 +222,23 @@ class SerdesGenerator {
             _jsonGetter(targetField.type, targetField.jsonName, 'json') +
             '.toString();',
       );
-      result.writeln('    final content = ' +
-          _jsonGetter(parseType('Map<String, dynamic>'), field.jsonName, 'json') +
-          ';');
+
+      final contentType = field.type.isOptional
+          ? parseType('Map<String, dynamic>?')
+          : parseType('Map<String, dynamic>');
+
+      result
+          .writeln('    final content = ' + _jsonGetter(contentType, field.jsonName, 'json') + ';');
       result.writeln();
       result.write('    ');
 
       for (final value in field.unionValues) {
         result.writeln('if (union == \'${value.value}\') {');
-        result.writeln('      return ${value.type.displayName}.fromJson(content);');
+        if (contentType.isOptional) {
+          result.writeln('      return ${value.type.displayName}.fromJson(content ?? {});');
+        } else {
+          result.writeln('      return ${value.type.displayName}.fromJson(content);');
+        }
         result.write('    } else ');
       }
 
@@ -363,10 +371,11 @@ class SerdesGenerator {
     final typeName = type.displayName;
 
     if (type.isEnum) {
-      final getter = _jsonPrimitiveGetter(parseType('dynamic'), fieldName, json);
       if (type.isOptional) {
+        final getter = _jsonPrimitiveGetter(parseType('dynamic?'), fieldName, json);
         return '\$SerdesJson_${type.name}TypeAdapter.fromJsonNullable(\'$fieldName\', $getter)';
       } else {
+        final getter = _jsonPrimitiveGetter(parseType('dynamic'), fieldName, json);
         return '\$SerdesJson_${type.name}TypeAdapter.fromJson(\'$fieldName\', $getter)';
       }
     } else if (type.isPrimitive) {

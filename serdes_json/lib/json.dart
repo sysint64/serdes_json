@@ -4,7 +4,7 @@ T getJsonValue<T>(Map<String, dynamic> json, String key) {
   if (!json.containsKey(key)) {
     throw SchemeConsistencyException('key "$key" hasn\'t found');
   } else if (json[key] is! T) {
-    if (T == double && json[key] is int) {
+    if ((T == double || T.toString() == 'double?') && json[key] is int) {
       return json[key].toDouble();
     } else {
       throw SchemeConsistencyException(
@@ -57,13 +57,7 @@ List<T> transformJsonListOfMap<T, R>(
   final List<dynamic> list = getJsonValue(json, key);
 
   T mapper(it) {
-    try {
-      return transform(it as R);
-    } on Exception catch (e, _) {
-      throw SchemeConsistencyException(
-        'Failed to transform value "$it";\ncause: $e',
-      );
-    }
+    return transform(it as R);
   }
 
   return list.isEmpty ? [] : list.map(mapper).toList();
@@ -76,13 +70,7 @@ List<T> transformJsonListOfString<T>(
   final List<dynamic> list = getJsonValue(json, key);
 
   String mapper(it) {
-    try {
-      return it as String;
-    } on Exception catch (e) {
-      throw SchemeConsistencyException(
-        'Failed to transform value "$it";\ncause: $e',
-      );
-    }
+    return it as String;
   }
 
   return list.isEmpty ? [] : list.map(mapper).toList() as List<T>;
@@ -97,13 +85,7 @@ List<T>? transformJsonListOfMapOrNull<T, R>(
     final List<dynamic> list = getJsonValue(json, key);
 
     T mapper(it) {
-      try {
-        return transform(it as R);
-      } on Exception catch (e) {
-        throw SchemeConsistencyException(
-          'Failed to transform value "$it";\ncause: $e',
-        );
-      }
+      return transform(it as R);
     }
 
     return list.isEmpty ? [] : list.map(mapper).toList();
@@ -117,13 +99,7 @@ List<T> transformJsonList<T>(
   T Function(Map<String, dynamic>) transform,
 ) {
   T mapper(it) {
-    try {
-      return transform(it as Map<String, dynamic>);
-    } on Exception catch (e) {
-      throw SchemeConsistencyException(
-        'Failed to transform value "$it";\ncause: $e',
-      );
-    }
+    return transform(it as Map<String, dynamic>);
   }
 
   return json.isEmpty ? [] : json.map(mapper).toList();

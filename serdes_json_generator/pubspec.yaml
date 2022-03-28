@@ -1,6 +1,6 @@
 name: serdes_json_generator
 description: code generator for serdes_json
-version: 0.4.1
+version: 0.4.2
 homepage: https://github.com/sysint64/serdes_json
 
 environment:
@@ -15,7 +15,7 @@ dependencies:
   equatable: ^2.0.0
   recase: ^4.0.0
   collection: ^1.15.0
-  serdes_json: ^0.3.0
+  serdes_json: ^0.4.0
 
 dev_dependencies:
   flutter_test:
